@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e7c66">
+<title>Simulador de Financiamento Imobiliário</title>
+<style>
+:root{
+  --bg:#f2f4f7;--card:#ffffff;--card2:#f7f9fb;--text:#0f172a;--muted:#667085;--line:#e3e8ef;
+  --accent:#0e7c66;--accent-2:#0a5c4c;--accent-soft:#e3f3ee;--on-accent:#ffffff;
+  --c2:#5b61d6;--c3:#98a2b3;--warn:#a15c07;--warn-soft:#fdf2d8;--danger:#b42318;--danger-soft:#fde8e6;--good:#067647;
+  --shadow:0 1px 2px rgba(16,24,40,.04),0 6px 20px rgba(16,24,40,.06);--r:20px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b0f14;--card:#131a22;--card2:#0f151c;--text:#e7ecf2;--muted:#8a97a8;--line:#222c38;
+  --accent:#3fd3ab;--accent-2:#7ae3c6;--accent-soft:#11302a;--on-accent:#04221b;
+  --c2:#a4aaff;--c3:#5e6b7c;--warn:#f5c04a;--warn-soft:#352a0c;--danger:#f97066;--danger-soft:#3a1512;--good:#47cd89;
+  --shadow:0 1px 2px rgba(0,0,0,.5);
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Helvetica Neue",Arial,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1200px;margin:0 auto;padding:0 14px}
+.num,.big-v,td,th,b{font-variant-numeric:tabular-nums}
+small{font-size:.78em;color:var(--muted);font-weight:500}
+.muted{color:var(--muted)}
+[hidden]{display:none!important}
+
+/* topo */
+.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;padding-bottom:10px}
+.brand{font-weight:800;font-size:17px;letter-spacing:-.01em}
+.brand b{color:var(--accent)}
+.sub{font-size:12px;color:var(--muted)}
+.top-act{display:flex;gap:6px}
+
+/* layout */
+.layout{display:grid;gap:14px;padding-top:14px;padding-bottom:18px}
+.col{display:grid;gap:14px;align-content:start;min-width:0}
+@media(min-width:1000px){
+  .layout{grid-template-columns:410px minmax(0,1fr);align-items:start}
+  .col-inputs{position:sticky;top:68px;max-height:calc(100vh - 82px);overflow:auto;padding-right:4px;scrollbar-width:thin}
+  body{padding-bottom:0}
+}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;min-width:0}
+.card h2{margin:0 0 14px;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card h3{margin:16px 0 8px;font-size:14px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+details.card{padding:0}
+details.card>summary{list-style:none;padding:18px;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:56px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+details.card[open]>summary::after{transform:rotate(-135deg)}
+details.card>.inner{padding:0 18px 18px}
+.badge{font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:999px}
+
+/* campos */
+.field{display:block;margin-bottom:14px}
+.lbl{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.lbl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.lbl-row .lbl{margin:0}
+.inp{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:14px;background:var(--card2);padding:0 14px;min-height:54px;transition:border-color .15s}
+.inp:focus-within{border-color:var(--accent);background:var(--card)}
+.inp input,.inp select{flex:1;min-width:0;width:100%;border:0;background:transparent;font-size:18px;font-weight:600;padding:12px 0;outline:0}
+.inp em{font-style:normal;color:var(--muted);font-weight:600;font-size:15px;white-space:nowrap}
+.inp.sm{min-height:46px;padding:0 10px}.inp.sm input{font-size:16px;padding:8px 0}
+.row2{display:grid;grid-template-columns:1fr 112px;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.hint{font-size:13px;color:var(--muted);margin-top:6px}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.4}
+input[type=range]{width:100%;accent-color:var(--accent);height:30px;margin:8px 0 0}
+input[type=month]{color-scheme:light dark}
+.check{display:flex;align-items:center;gap:12px;min-height:44px;font-weight:600;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.readout{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 14px;background:var(--accent-soft);border-radius:14px;margin-bottom:10px}
+.readout span{font-size:13px;font-weight:600;color:var(--muted)}
+.readout b{font-size:20px;color:var(--accent)}
+.readout.sm{background:var(--card2)}.readout.sm b{font-size:16px;color:var(--text)}
+
+/* chips e segmentos */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{border:1.5px solid var(--line);background:var(--card2);border-radius:999px;padding:8px 14px;font-size:14.5px;font-weight:600;min-height:44px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.chip small{font-size:11px;font-weight:600;margin-top:2px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip.on small{color:var(--on-accent);opacity:.85}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;padding:9px 6px;border-radius:10px;font-weight:700;font-size:14.5px;color:var(--muted);min-height:42px}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg.mini{padding:3px;border-radius:10px}.seg.mini button{min-height:30px;padding:4px 10px;font-size:13px;border-radius:8px}
+
+/* botões */
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:700;font-size:15px;min-height:48px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.sec{background:var(--card2);color:var(--text);border:1.5px solid var(--line)}
+.btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+.btn.sm{min-height:38px;padding:7px 12px;font-size:13.5px;border-radius:11px}
+.btn.full{width:100%}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);font-size:22px;line-height:1;color:var(--muted)}
+
+/* alertas */
+.alert{border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
+.alert.warn{background:var(--warn-soft);color:var(--warn)}
+.alert.danger{background:var(--danger-soft);color:var(--danger)}
+.alert .btn{margin-top:8px}
+
+/* resultado */
+.hero{border:1.5px solid color-mix(in srgb,var(--accent) 35%,var(--line))}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+@media(min-width:620px){.meta{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.meta span{display:block;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.meta b{display:block;font-size:16px}
+.meta b small{display:block;font-size:12.5px}
+.big{padding:16px 0 6px}
+.big-l{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.big-v{font-size:clamp(34px,10vw,46px);font-weight:800;letter-spacing:-.03em;color:var(--accent);line-height:1.1;margin-top:2px}
+.two{display:grid;gap:10px}
+@media(min-width:620px){.two{grid-template-columns:1fr 1fr;gap:24px}}
+.two .big-v{font-size:clamp(28px,8vw,38px)}
+.kv{list-style:none;margin:0;padding:0}
+.kv li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.kv li:last-child{border-bottom:0}
+.kv li span{color:var(--muted)}
+.kv li b{font-weight:700;text-align:right}
+.kv li.sep{border-top:2px solid var(--line);margin-top:4px}
+.kv li.hl b{color:var(--accent)}
+.good{color:var(--good)!important}
+.pill-note{font-size:12.5px;color:var(--muted);background:var(--card2);border-radius:10px;padding:8px 10px;margin-top:10px}
+.empty{padding:26px 8px;text-align:center;color:var(--muted)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card2);border-radius:14px;padding:12px}
+.stat span{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.stat b{display:block;font-size:18px;margin-top:2px}
+.stat.acc{background:var(--accent-soft)}.stat.acc b{color:var(--accent)}
+
+/* tabelas */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px;padding:0 18px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:10px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--card)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
+tr.hl td{background:var(--accent-soft);font-weight:700}
+tr.hl td:first-child{background:var(--accent-soft)}
+tr.tot td{font-weight:800;border-top:2px solid var(--line)}
+.scroll-y{max-height:62vh;overflow:auto}
+.scroll-y thead th{position:sticky;top:0;z-index:2}
+.scroll-y thead th:first-child{z-index:3}
+
+/* SAC x PRICE */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vs>div{background:var(--card2);border-radius:14px;padding:12px}
+.vs h4{margin:0 0 6px;font-size:15px}
+.vs .kv li{font-size:13.5px;padding:7px 0;flex-direction:column;align-items:flex-start;gap:0}
+.vs .kv li b{font-size:16px;text-align:left}
+
+/* listas de ferramentas */
+.opt-list{display:grid;gap:8px}
+.opt{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.opt.cur{border-color:var(--accent);background:var(--accent-soft)}
+.opt .t{font-weight:700}
+.opt .v{font-weight:800;font-size:17px;text-align:right}
+.opt .s{font-size:12.5px;color:var(--muted)}
+.opt .d{font-size:12.5px;font-weight:700;text-align:right}
+.bar{grid-column:1/-1;height:6px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:6px}
+
+/* amortizações extras */
+.pont{display:grid;grid-template-columns:118px 1fr 44px;gap:8px;align-items:center;margin-bottom:10px}
+.pont-date{grid-column:1/-1;font-size:12px;color:var(--muted);margin-top:-4px}
+
+/* gráfico */
+#chartBox{position:relative;margin-top:12px;touch-action:pan-y}
+#chart{display:block;width:100%}
+#chartTip{position:absolute;pointer-events:none;background:var(--text);color:var(--bg);font-size:12.5px;padding:8px 10px;border-radius:10px;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.2);z-index:5;line-height:1.45}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* resumo visual */
+.resumo{border-radius:22px;padding:22px;color:#fff;background:linear-gradient(145deg,#0e7c66 0%,#0a5046 55%,#0b3b35 100%);box-shadow:0 10px 30px rgba(10,80,70,.3)}
+.resumo .r-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}
+.resumo .r-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.8;font-weight:700}
+.resumo .r-sys{font-size:12px;font-weight:800;background:rgba(255,255,255,.16);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.resumo .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.resumo .r-grid div span,.resumo .r-big span{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.72;font-weight:700}
+.resumo .r-grid div b{display:block;font-size:17px;font-weight:800}
+.resumo .r-grid div small{color:#fff;opacity:.75;font-size:12px}
+.resumo .r-big{margin:18px 0;padding:16px 0;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18)}
+.resumo .r-big b{display:block;font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.resumo .r-foot{font-size:10.5px;opacity:.6;margin-top:14px;line-height:1.35}
+
+/* barra inferior */
+.bbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(0,0,0,.08);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bbar .bl{font-size:12px;color:var(--muted);font-weight:600}
+.bbar .bv{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.02em;line-height:1.1;white-space:nowrap}
+.bbar .btn{flex:none}
+@media(min-width:1000px){.bbar{display:none}}
+
+footer{padding:6px 0 28px;font-size:12.5px;color:var(--muted);line-height:1.5}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:all .25s;z-index:80;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{box-shadow:0 0 0 0 var(--accent)}40%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 35%,transparent)}100%{box-shadow:var(--shadow)}}
+
+@media print{
+  :root{--bg:#fff;--card:#fff;--card2:#f6f7f9;--text:#000;--muted:#555;--line:#ddd;--accent:#0e7c66;--accent-soft:#eef7f4}
+  body{background:#fff;padding:0;font-size:12px}
+  .no-print,.top,.bbar,.col-inputs,.toast,#chartCard,#tableCard,#cenCard{display:none!important}
+  .layout{display:block;padding:0}
+  .col{display:block}
+  .card{box-shadow:none;break-inside:avoid;margin-bottom:10px;border:1px solid #ccc}
+  .resumo{-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid}
+  .tbl-wrap{overflow:visible;margin:0;padding:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top no-print">
+  <div class="wrap top-in">
+    <div><div class="brand">Simulador <b>Imobiliário</b></div><div class="sub">SAC · PRICE · amortizações extras</div></div>
+    <div class="top-act">
+      <button class="btn ghost sm" id="btnShareTop" type="button">Compartilhar</button>
+      <button class="btn ghost sm" id="btnReset" type="button">Restaurar</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap layout">
+<!-- ================= ENTRADAS ================= -->
+<section class="col col-inputs">
+
+  <div class="card">
+    <h2>Dados do imóvel</h2>
+    <label class="field"><span class="lbl">Valor do imóvel</span>
+      <div class="inp"><em>R$</em><input id="valor" inputmode="decimal" autocomplete="off"></div></label>
+    <div class="field"><span class="lbl">Entrada</span>
+      <div class="row2">
+        <div class="inp"><em>R$</em><input id="entrada" inputmode="decimal" autocomplete="off"></div>
+        <div class="inp"><input id="entradaPct" inputmode="decimal" autocomplete="off"><em>%</em></div>
+      </div>
+      <input type="range" id="entradaRange" min="0" max="100" step="0.5" aria-label="Percentual de entrada">
+    </div>
+    <div class="readout"><span>Valor financiado</span><b id="finOut">—</b></div>
+    <div class="readout sm"><span>Percentual financiado (LTV)</span><b id="ltvOut">—</b></div>
+    <label class="field" style="margin-top:12px"><span class="lbl">Máximo financiável pelo banco</span>
+      <div class="inp"><input id="ltvMax" inputmode="decimal" autocomplete="off"><em>% do imóvel</em></div></label>
+    <div id="ltvAlert" class="alert warn" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>Bancos e taxa</h2>
+    <div class="chips" id="bankChips"></div>
+    <div class="field">
+      <div class="lbl-row"><span class="lbl">Taxa de juros efetiva</span>
+        <div class="seg mini" id="taxaUnit"><button type="button" data-v="aa">a.a.</button><button type="button" data-v="am">a.m.</button></div></div>
+      <div class="inp"><input id="taxa" inputmode="decimal" autocomplete="off"><em id="taxaSuf">% a.a.</em></div>
+      <div class="hint" id="taxaHint"></div>
+    </div>
+    <p class="note">As taxas são referências e podem variar conforme perfil, relacionamento, renda, imóvel e condições do banco.</p>
+  </div>
+
+  <div class="card">
+    <h2>Sistema e prazo</h2>
+    <div class="field"><span class="lbl">Sistema de amortização</span>
+      <div class="seg" id="sistemaSeg"><button type="button" data-v="SAC">SAC</button><button type="button" data-v="PRICE">PRICE</button><button type="button" data-v="COMP">SAC x PRICE</button></div></div>
+    <div class="field" style="margin-bottom:4px"><span class="lbl">Prazo</span>
+      <div class="chips" id="prazoChips" style="margin-bottom:8px"></div>
+      <div class="row2">
+        <div class="inp"><input id="prazoNum" inputmode="numeric" autocomplete="off"><em>meses</em></div>
+        <div class="inp" style="justify-content:center"><b id="prazoAnos" style="font-size:14px;text-align:center"></b></div>
+      </div>
+      <input type="range" id="prazoRange" min="1" max="420" step="1" aria-label="Prazo em meses">
+    </div>
+    <label class="field" style="margin-top:10px;margin-bottom:0"><span class="lbl">Mês da 1ª parcela (para datas da tabela)</span>
+      <div class="inp"><input type="month" id="inicio"></div></label>
+  </div>
+
+  <div class="card">
+    <h2>TR</h2>
+    <label class="check"><input type="checkbox" id="trOn"> Considerar TR estimada</label>
+    <div id="trBox" hidden>
+      <label class="field" style="margin-top:8px"><span class="lbl">TR anual estimada</span>
+        <div class="inp"><input id="trAA" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div>
+        <div class="hint" id="trHint"></div></label>
+    </div>
+    <p class="note">A TR real varia ao longo do financiamento. Este valor é apenas uma estimativa para simulação. Com TR = 0%, o saldo não é corrigido.</p>
+  </div>
+
+  <details class="card" id="extrasDetails" open>
+    <summary>Amortizações extras <span class="badge" id="extrasBadge" hidden></span></summary>
+    <div class="inner">
+      <label class="check"><input type="checkbox" id="extrasOn"> Aplicar amortizações extras</label>
+      <div class="field" style="margin-top:8px"><span class="lbl">Ao amortizar, reduzir</span>
+        <div class="seg" id="modoSeg"><button type="button" data-v="prazo">Prazo</button><button type="button" data-v="parcela">Parcela</button></div>
+        <div class="hint" id="modoHint"></div></div>
+
+      <h3>Pontuais</h3>
+      <div id="pontList"></div>
+      <button class="btn sec full" type="button" id="addPont">+ Adicionar amortização</button>
+
+      <h3>Recorrente</h3>
+      <div class="row3">
+        <label class="field"><span class="lbl">Valor</span><div class="inp sm"><em>R$</em><input id="recValor" inputmode="decimal" autocomplete="off"></div></label>
+        <label class="field"><span class="lbl">A cada</span><div class="inp sm"><input id="recCada" inputmode="numeric" autocomplete="off"><em>meses</em></div></label>
+        <label class="field"><span class="lbl">A partir da parcela nº</span><div class="inp sm"><input id="recInicio" inputmode="numeric" autocomplete="off"></div></label>
+        <label class="field"><span class="lbl">Quantidade (0 = sempre)</span><div class="inp sm"><input id="recQtd" inputmode="numeric" autocomplete="off"><em>vezes</em></div></label>
+      </div>
+      <div class="hint" id="recHint" style="margin-top:-6px"></div>
+      <p class="note">O valor extra é abatido do saldo devedor logo após o pagamento da parcela indicada. Ex.: 13º salário todo ano → a cada 12 meses a partir da parcela de dezembro.</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary>Custos adicionais mensais</summary>
+    <div class="inner">
+      <label class="field"><span class="lbl">Seguro MIP (morte e invalidez)</span><div class="inp"><em>R$</em><input id="mip" inputmode="decimal"><em>/mês</em></div></label>
+      <label class="field"><span class="lbl">Seguro DFI (danos físicos)</span><div class="inp"><em>R$</em><input id="dfi" inputmode="decimal"><em>/mês</em></div></label>
+      <label class="field" style="margin-bottom:0"><span class="lbl">Tarifa administrativa</span><div class="inp"><em>R$</em><input id="tarifa" inputmode="decimal"><em>/mês</em></div></label>
+      <p class="note">Valores somados à prestação enquanto houver saldo. Na prática o MIP costuma variar com idade e saldo devedor; aqui é tratado como valor fixo.</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary>Custos da compra</summary>
+    <div class="inner">
+      <label class="field"><span class="lbl">ITBI</span><div class="inp"><input id="itbi" inputmode="decimal"><em>% do imóvel</em></div><div class="hint" id="itbiHint"></div></label>
+      <label class="field"><span class="lbl">Registro / escritura</span><div class="inp"><em>R$</em><input id="registro" inputmode="decimal"></div></label>
+      <label class="field"><span class="lbl">Avaliação bancária</span><div class="inp"><em>R$</em><input id="avaliacao" inputmode="decimal"></div></label>
+      <label class="field" style="margin-bottom:0"><span class="lbl">Outras despesas</span><div class="inp"><em>R$</em><input id="outras" inputmode="decimal"></div></label>
+      <p class="note">A alíquota de ITBI varia por município. Confira a da sua cidade.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ================= RESULTADOS ================= -->
+<section class="col col-results">
+
+  <div class="card hero" id="resultado">
+    <h2>Sua simulação <span class="badge" id="heroBadge"></span></h2>
+    <div id="heroBody"></div>
+    <div class="btns no-print">
+      <button class="btn" type="button" id="btnGerar">Gerar resumo</button>
+      <button class="btn sec" type="button" id="btnSalvarCen">Salvar cenário</button>
+    </div>
+  </div>
+
+  <div class="card" id="extrasRes" hidden>
+    <h2>Efeito das amortizações extras</h2>
+    <div id="extrasResBody"></div>
+  </div>
+
+  <div class="card" id="rendaCard">
+    <h2>Renda mínima estimada</h2>
+    <div class="field no-print"><div class="lbl-row"><span class="lbl">Comprometimento máximo de renda</span><b id="compOut"></b></div>
+      <input type="range" id="comp" min="20" max="40" step="1" aria-label="Comprometimento de renda"></div>
+    <div id="rendaBody"></div>
+    <p class="note">Estimativa: 1ª parcela ÷ comprometimento. Cada banco possui critérios próprios de aprovação (renda bruta ou líquida, outras dívidas, idade, score).</p>
+  </div>
+
+  <div class="card" id="compraCard">
+    <h2>Dinheiro na aquisição</h2>
+    <div id="compraBody"></div>
+  </div>
+
+  <div class="card" id="chartCard">
+    <h2>Evolução</h2>
+    <div class="seg" id="chartMetric"><button type="button" data-v="total">Parcela</button><button type="button" data-v="saldo">Saldo</button><button type="button" data-v="juros">Juros</button><button type="button" data-v="amort">Amortiz.</button></div>
+    <div id="chartBox"><canvas id="chart" aria-label="Gráfico da evolução do financiamento"></canvas><div id="chartTip" hidden></div></div>
+    <div class="legend" id="chartLegend"></div>
+  </div>
+
+  <div class="card" id="tableCard">
+    <h2>Tabela de amortização</h2>
+    <button class="btn sec full" type="button" id="btnTabela">Ver todas as parcelas</button>
+    <div id="tableBox" hidden style="margin-top:12px">
+      <div class="seg" id="tblSis" style="margin-bottom:8px"><button type="button" data-v="SAC">SAC</button><button type="button" data-v="PRICE">PRICE</button></div>
+      <div class="seg" id="tblFiltro"><button type="button" data-v="todas">Todas</button><button type="button" data-v="anual">Anual</button><button type="button" data-v="ini">12 primeiras</button><button type="button" data-v="fim">12 últimas</button></div>
+      <div class="tbl-wrap scroll-y" style="margin-top:10px"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <div class="card" id="prazosCard">
+    <h2>Comparador de prazos <span class="badge" id="prazosBadge"></span></h2>
+    <div class="tbl-wrap"><table id="tblPrazos"><thead></thead><tbody></tbody></table></div>
+  </div>
+
+  <div class="card" id="vsCard">
+    <h2>SAC x PRICE</h2>
+    <div id="vsBody"></div>
+  </div>
+
+  <div class="card" id="entradaCard">
+    <h2>E se eu aumentar a entrada?</h2>
+    <div class="opt-list" id="entradaBody"></div>
+  </div>
+
+  <div class="card" id="taxaCard">
+    <h2>Impacto da taxa de juros</h2>
+    <div class="opt-list" id="taxaBody"></div>
+  </div>
+
+  <div class="card" id="cenCard">
+    <h2>Cenários <span class="badge" id="cenBadge"></span></h2>
+    <div id="cenList"></div>
+    <div class="btns">
+      <button class="btn sec" type="button" id="btnSalvarCen2">Salvar cenário</button>
+      <button class="btn sec" type="button" id="btnCompCen">Comparar cenários</button>
+    </div>
+    <div id="cenComp" hidden style="margin-top:14px"></div>
+  </div>
+
+  <div class="card" id="resumoWrap">
+    <h2>Resumo</h2>
+    <div class="resumo" id="resumoCard"></div>
+    <div class="btns no-print">
+      <button class="btn" type="button" id="btnShare">Compartilhar</button>
+      <button class="btn sec" type="button" id="btnCopy">Copiar resumo</button>
+      <button class="btn sec" type="button" id="btnImg">Salvar como imagem</button>
+      <button class="btn sec" type="button" id="btnPrint">Imprimir / PDF</button>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<footer class="wrap">
+  Esta ferramenta é apenas uma simulação financeira e não representa proposta, aprovação ou oferta de crédito. Taxas, seguros, TR, tarifas, critérios de renda e condições podem variar conforme banco e perfil do cliente.
+</footer>
+
+<div class="bbar no-print">
+  <div><div class="bl" id="bbarLbl">Parcela inicial</div><div class="bv" id="bbarVal">—</div></div>
+  <button class="btn" type="button" id="btnVer">Ver simulação</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ENGINE-START — motor de cálculo (sem dependência de interface)
+/** Taxa efetiva anual (fração) -> taxa mensal equivalente (fração). */
+function taxaMensal(aa){ return Math.pow(1 + aa, 1/12) - 1; }
+/** Taxa mensal (fração) -> taxa efetiva anual equivalente (fração). */
+function taxaAnual(am){ return Math.pow(1 + am, 12) - 1; }
+/** Prestação PRICE: PMT = PV · i(1+i)^n / ((1+i)^n − 1). */
+function pmt(pv, i, n){
+  if (n <= 0) return pv;
+  if (Math.abs(i) < 1e-15) return pv / n;
+  var f = Math.pow(1 + i, n);
+  return pv * i * f / (f - 1);
+}
+/** Monta vetor [1..n] com o valor extra a amortizar após cada parcela. */
+function buildExtras(n, cfg){
+  var ex = new Array(n + 2).fill(0);
+  if (!cfg || !cfg.on) return ex;
+  (cfg.pontuais || []).forEach(function(p){
+    var m = Math.round(+p.mes), v = +p.valor;
+    if (m >= 1 && m <= n && v > 0) ex[m] += v;
+  });
+  var r = cfg.rec;
+  if (r && +r.valor > 0 && +r.cada >= 1){
+    var c = 0, step = Math.max(1, Math.round(+r.cada));
+    for (var m = Math.max(1, Math.round(+r.inicio || 1)); m <= n; m += step){
+      ex[m] += +r.valor; c++;
+      if (+r.qtd > 0 && c >= +r.qtd) break;
+    }
+  }
+  return ex;
+}
+/**
+ * Gera o cronograma completo.
+ * o = { pv, iM, n, sistema:'SAC'|'PRICE', trM, seg, tarifa, extras:[], modo:'prazo'|'parcela' }
+ * TR: saldo corrigido no início de cada mês antes do cálculo dos juros.
+ * SAC:  amortização = saldo corrigido / parcelas restantes (sem TR = PV/n constante).
+ * PRICE: prestação recalculada sobre o saldo corrigido (sem TR = PMT constante).
+ * Extras com modo 'prazo' mantêm amortização (SAC) ou prestação (PRICE) e encurtam o prazo;
+ * modo 'parcela' mantém o prazo e recalcula sobre o saldo restante.
+ */
+function simular(o){
+  var rows = [], saldo = +o.pv || 0, n = Math.round(o.n) || 0, i = +o.iM || 0, tr = +o.trM || 0;
+  var ex = o.extras || [], modo = o.modo === 'parcela' ? 'parcela' : 'prazo';
+  var seg = +o.seg || 0, tar = +o.tarifa || 0, isPrice = o.sistema === 'PRICE';
+  if (saldo > 0 && n >= 1){
+    var amortBase = saldo / n, pmtBase = pmt(saldo, i, n);
+    for (var k = 1; k <= n && saldo > 0; k++){
+      var corr = saldo * tr;
+      saldo += corr; amortBase *= 1 + tr; pmtBase *= 1 + tr;
+      var rem = n - k + 1, juros = saldo * i, amort;
+      if (!isPrice) amort = (modo === 'parcela') ? saldo / rem : amortBase;
+      else amort = ((modo === 'parcela') ? pmt(saldo, i, rem) : pmtBase) - juros;
+      if (amort < 0) amort = 0;
+      if (k === n || amort > saldo) amort = saldo;
+      saldo -= amort;
+      var extra = 0;
+      if (ex[k] > 0 && saldo > 0){ extra = Math.min(ex[k], saldo); saldo -= extra; }
+      if (saldo < 0.005){ if (extra > 0) extra += saldo; else amort += saldo; saldo = 0; }
+      var prest = amort + juros;
+      rows.push({ k:k, corr:corr, juros:juros, amort:amort, prest:prest, seg:seg, tarifa:tar,
+                  custos:seg + tar, total:prest + seg + tar, extra:extra, saldo:saldo });
+    }
+  }
+  return resumir(rows, o);
+}
+function resumir(rows, o){
+  var s = { rows:rows, n:rows.length, nContratado:Math.round(o.n) || 0, pv:+o.pv || 0,
+            juros:0, amort:0, extras:0, corr:0, custos:0, prest:0 };
+  rows.forEach(function(r){ s.juros += r.juros; s.amort += r.amort; s.extras += r.extra; s.corr += r.corr; s.custos += r.custos; s.prest += r.prest; });
+  s.totalPago = s.prest + s.custos + s.extras;          // tudo que sai do bolso para o banco
+  var at = function(m){ return (m >= 1 && m <= rows.length) ? rows[m - 1].total : null; };
+  s.at = at;
+  s.p1 = at(1); s.p13 = at(13); s.p61 = at(61);
+  s.meioN = Math.max(1, Math.ceil(rows.length / 2)); s.pMeio = at(s.meioN);
+  s.last = rows.length ? rows[rows.length - 1].total : null;
+  s.fechamento = (s.amort + s.extras) - (s.pv + s.corr); // deve ser ~0
+  return s;
+}
+// ENGINE-END
+</script>
+
+<script>
+(function(){
+'use strict';
+
+/* ============ CONFIGURAÇÃO — edite livremente ============
+   Taxas de referência (% a.a., efetivas). Não são oficiais. */
+const BANCOS = [
+  { id:'caixa',     nome:'Caixa',           taxa:10.99 },
+  { id:'bb',        nome:'Banco do Brasil', taxa:11.29 },
+  { id:'santander', nome:'Santander',       taxa:11.79 },
+  { id:'itau',      nome:'Itaú',            taxa:11.49 },
+  { id:'bradesco',  nome:'Bradesco',        taxa:11.69 },
+  { id:'custom',    nome:'Personalizado',   taxa:null  }
+];
+const PRAZOS_ANOS = [10,15,20,25,30,35];
+const PRAZOS_COMPARADOR = [240,300,360,420];
+const ENTRADAS_EXTRA = [50000,100000,200000];
+const MAX_CENARIOS = 4;
+const LS_STATE = 'sfi_state_v1', LS_CEN = 'sfi_cenarios_v1';
+const HTML2CANVAS = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+/* ========================================================= */
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function nextMonthStr(){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+const DEFAULTS = {
+  valor:1600000, entrada:400000, banco:'caixa', customTaxa:10.99, taxaAA:10.99, taxaUnit:'aa',
+  sistema:'SAC', prazo:360, tr:false, trAA:1.5, mip:0, dfi:0, tarifa:0, comp:30, ltvMax:80,
+  itbi:3, registro:0, avaliacao:0, outras:0, inicio:nextMonthStr(),
+  extrasOn:true, extraModo:'prazo', pontuais:[], rec:{ valor:0, cada:12, inicio:12, qtd:0 }
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+function lsGet(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
+function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+function normState(st){
+  const s = Object.assign(clone(DEFAULTS), st || {});
+  s.rec = Object.assign(clone(DEFAULTS.rec), (st && st.rec) || {});
+  if (!Array.isArray(s.pontuais)) s.pontuais = [];
+  return s;
+}
+let S = normState(lsGet(LS_STATE));
+
+/* ---------- formatação pt-BR ---------- */
+const nfBRL = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
+const brl = v => (v == null || !isFinite(v)) ? '—' : nfBRL.format(v).replace(/\u00a0/g, ' ');
+const num = (v, d = 2) => (+v).toLocaleString('pt-BR', { minimumFractionDigits:d, maximumFractionDigits:d });
+const smart = (v, maxd = 2) => (+v).toLocaleString('pt-BR', { minimumFractionDigits:0, maximumFractionDigits:maxd });
+const pct = (v, d = 2) => (v == null || !isFinite(v)) ? '—' : num(v, d) + '%';
+function brlShort(v){ const a = Math.abs(v); if (a >= 1e6) return 'R$ ' + smart(v / 1e6, 2) + ' mi'; if (a >= 1e3) return 'R$ ' + smart(v / 1e3, 0) + ' mil'; return 'R$ ' + smart(v, 0); }
+function brlAxis(v){ const a = Math.abs(v); if (a >= 1e6) return smart(v / 1e6, 1) + ' mi'; if (a >= 1e3) return smart(v / 1e3, a >= 1e4 ? 0 : 1) + ' mil'; return smart(v, 0); }
+function moneyIn(v){ v = +v || 0; return num(v, Math.round(v * 100) % 100 ? 2 : 0); }
+function parseBR(s){
+  s = String(s == null ? '' : s).replace(/[^\d,.\-]/g, '');
+  if (!s) return NaN;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else { const p = s.split('.'); if (p.length > 2 || (p.length === 2 && p[1].length === 3)) s = p.join(''); }
+  return parseFloat(s);
+}
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function labelMes(k){
+  const parts = String(S.inicio || '').split('-').map(Number);
+  if (!parts[0] || !parts[1] || !(k >= 1)) return '';
+  const t = (parts[1] - 1) + (Math.round(k) - 1);
+  return MESES[t % 12] + '/' + (parts[0] + Math.floor(t / 12));
+}
+function fmtPrazo(m){
+  m = Math.round(m); const a = Math.floor(m / 12), r = m % 12;
+  const pa = a ? a + (a === 1 ? ' ano' : ' anos') : '', pm = r ? r + (r === 1 ? ' mês' : ' meses') : '';
+  return pa && pm ? pa + ' e ' + pm : (pa || pm || '0 meses');
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+
+/* ---------- cálculo ---------- */
+const sistemaPrim = () => S.sistema === 'COMP' ? 'SAC' : S.sistema;
+const sistemaLabel = () => S.sistema === 'COMP' ? 'SAC x PRICE' : S.sistema;
+const bancoNome = () => (BANCOS.find(b => b.id === S.banco) || BANCOS[BANCOS.length - 1]).nome;
+function params(over){
+  const st = Object.assign({}, S, over || {});
+  const pv = Math.max(0, (+st.valor || 0) - (+st.entrada || 0));
+  const n = Math.max(1, Math.min(420, Math.round(+st.prazo || 1)));
+  return {
+    pv, n, iM: taxaMensal((+st.taxaAA || 0) / 100),
+    sistema: st.sistemaCalc || (st.sistema === 'COMP' ? 'SAC' : st.sistema),
+    trM: st.tr ? taxaMensal((+st.trAA || 0) / 100) : 0,
+    seg: (+st.mip || 0) + (+st.dfi || 0), tarifa: +st.tarifa || 0, modo: st.extraModo,
+    extras: buildExtras(n, { on: st.extrasOn, pontuais: st.pontuais, rec: st.rec })
+  };
+}
+const sim = over => simular(params(over));
+let R = {};
+function compute(){
+  R.pv = Math.max(0, S.valor - S.entrada);
+  R.entradaPct = S.valor > 0 ? S.entrada / S.valor * 100 : 0;
+  R.ltv = S.valor > 0 ? R.pv / S.valor * 100 : 0;
+  R.sac = sim({ sistemaCalc:'SAC' });
+  R.price = sim({ sistemaCalc:'PRICE' });
+  R.main = sistemaPrim() === 'SAC' ? R.sac : R.price;
+  R.base = sim({ extrasOn:false });
+  R.hasExtras = R.main.extras > 0 || R.sac.extras > 0 || R.price.extras > 0;
+  R.renda = R.main.p1 != null ? R.main.p1 / (S.comp / 100) : null;
+}
+
+/* ---------- renderização ---------- */
+function vOrQuit(v, r){ return v == null ? (r.n < r.nContratado ? '<span class="good">quitado</span>' : '—') : brl(v); }
+function kvRows(r, sys){
+  const lastLbl = sys === 'PRICE' && !S.tr && !R.hasExtras ? 'Última (constante)' : 'Última';
+  return [
+    ['Após 1 ano <small>nº 13</small>', r.p13], ['Após 5 anos <small>nº 61</small>', r.p61],
+    ['No meio <small>nº ' + r.meioN + '</small>', r.pMeio], [lastLbl + ' <small>nº ' + r.n + '</small>', r.last]
+  ].map(([k, v]) => `<li><span>${k}</span><b>${vOrQuit(v, r)}</b></li>`).join('')
+  + `<li class="sep"><span>Juros totais</span><b>${brl(r.juros)}</b></li>`
+  + (r.corr > 0 ? `<li><span>Correção pela TR</span><b>${brl(r.corr)}</b></li>` : '')
+  + (r.custos > 0 ? `<li><span>Seguros e tarifas</span><b>${brl(r.custos)}</b></li>` : '')
+  + (r.extras > 0 ? `<li><span>Amortizações extras</span><b>${brl(r.extras)}</b></li>` : '')
+  + `<li class="hl"><span>Total pago ao banco</span><b>${brl(r.totalPago)}</b></li>`;
+}
+function renderHero(){
+  $('#heroBadge').textContent = sistemaLabel();
+  const b = $('#heroBody');
+  if (R.pv <= 0){ b.innerHTML = '<div class="empty">A entrada cobre todo o valor do imóvel — não há valor a financiar.</div>'; return; }
+  const iM = taxaMensal(S.taxaAA / 100) * 100;
+  const meta = [
+    ['Imóvel', brl(S.valor)],
+    ['Entrada', brl(S.entrada) + '<small>' + pct(R.entradaPct) + '</small>'],
+    ['Financiamento', brl(R.pv) + '<small>LTV ' + pct(R.ltv) + '</small>'],
+    ['Taxa', pct(S.taxaAA) + ' a.a.<small>≈ ' + pct(iM, 4) + ' a.m.</small>'],
+    ['Prazo', fmtPrazo(S.prazo) + '<small>' + S.prazo + ' meses</small>'],
+    ['Sistema', sistemaLabel() + '<small>' + esc(bancoNome()) + '</small>']
+  ];
+  let h = '<div class="meta">' + meta.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('') + '</div>';
+  const block = (r, label, sys) => `<div><div class="big"><span class="big-l">${label}</span><div class="big-v">${brl(r.p1)}</div></div><ul class="kv">${kvRows(r, sys)}</ul></div>`;
+  if (S.sistema === 'COMP') h += `<div class="two">${block(R.sac, '1ª parcela · SAC', 'SAC')}${block(R.price, '1ª parcela · PRICE', 'PRICE')}</div>`;
+  else h += block(R.main, 'Primeira parcela', S.sistema);
+  const notes = [];
+  const custo = (+S.mip || 0) + (+S.dfi || 0) + (+S.tarifa || 0);
+  if (custo > 0) notes.push('Parcelas incluem ' + brl(custo) + '/mês de seguros e tarifa.');
+  if (S.tr) notes.push('Saldo corrigido por TR estimada de ' + pct(S.trAA) + ' a.a.');
+  if (R.main.extras > 0) notes.push('Inclui ' + brl(R.main.extras) + ' em amortizações extras (reduzindo ' + (S.extraModo === 'prazo' ? 'o prazo' : 'a parcela') + ').');
+  if (notes.length) h += '<div class="pill-note">' + notes.join(' ') + '</div>';
+  b.innerHTML = h;
+}
+function renderExtrasRes(){
+  const card = $('#extrasRes'), m = R.main, b = R.base;
+  const on = m.extras > 0 && R.pv > 0;
+  card.hidden = !on;
+  const badge = $('#extrasBadge');
+  const tot = S.extrasOn ? m.extras : 0;
+  badge.hidden = !(tot > 0); badge.textContent = brlShort(tot);
+  if (!on) return;
+  const red = b.n - m.n, econJ = b.juros - m.juros, econT = b.totalPago - m.totalPago;
+  const qtd = m.rows.filter(r => r.extra > 0).length;
+  let h = '<div class="stat-grid">';
+  h += `<div class="stat acc"><span>Juros economizados</span><b>${brl(econJ)}</b></div>`;
+  h += `<div class="stat"><span>Total amortizado extra</span><b>${brl(m.extras)}</b><small>${qtd} aporte${qtd === 1 ? '' : 's'}</small></div>`;
+  if (S.extraModo === 'prazo'){
+    h += `<div class="stat acc"><span>Prazo reduzido em</span><b>${fmtPrazo(red)}</b><small>${red} parcelas a menos</small></div>`;
+    h += `<div class="stat"><span>Quitação</span><b>${m.n} parcelas</b><small>${fmtPrazo(m.n)} · ${labelMes(m.n)}</small></div>`;
+  } else {
+    const idx = m.rows.findIndex(r => r.extra > 0);
+    const k = idx >= 0 ? idx + 2 : null;
+    const pA = k ? m.at(k) : null, pB = k ? b.at(k) : null;
+    h += `<div class="stat acc"><span>Parcela após 1º aporte</span><b>${brl(pA)}</b><small>nº ${k || '—'} · sem extras ${brl(pB)}</small></div>`;
+    h += `<div class="stat"><span>Última parcela</span><b>${brl(m.last)}</b><small>sem extras ${brl(b.last)}</small></div>`;
+  }
+  h += '</div><ul class="kv" style="margin-top:10px">';
+  h += `<li><span>Juros totais sem extras</span><b>${brl(b.juros)}</b></li>`;
+  h += `<li><span>Juros totais com extras</span><b>${brl(m.juros)}</b></li>`;
+  h += `<li><span>Economia total paga ao banco</span><b class="good">${brl(econT)}</b></li>`;
+  if (m.extras > 0) h += `<li><span>Cada R$ 1,00 aportado economiza</span><b>${brl(econJ / m.extras)} de juros</b></li>`;
+  h += '</ul>';
+  if (S.sistema === 'COMP') h += '<div class="pill-note">Resultados acima referem-se ao SAC. As demais seções aplicam as amortizações extras em ambos os sistemas.</div>';
+  $('#extrasResBody').innerHTML = h;
+}
+function renderRenda(){
+  $('#compOut').textContent = pct(S.comp, 0);
+  const line = (lbl, r) => `<div class="stat acc"><span>${lbl}</span><b>${r.p1 != null ? brl(r.p1 / (S.comp / 100)) : '—'}</b><small>1ª parcela ${brl(r.p1)}</small></div>`;
+  let h = '<div class="stat-grid">';
+  if (S.sistema === 'COMP') h += line('Renda bruta · SAC', R.sac) + line('Renda bruta · PRICE', R.price);
+  else h += line('Renda familiar bruta', R.main) + `<div class="stat"><span>Comprometimento</span><b>${pct(S.comp, 0)}</b><small>da renda mensal</small></div>`;
+  $('#rendaBody').innerHTML = h + '</div>';
+}
+function renderCompra(){
+  const itbiV = S.valor * (+S.itbi || 0) / 100;
+  const custos = itbiV + (+S.registro || 0) + (+S.avaliacao || 0) + (+S.outras || 0);
+  $('#itbiHint').textContent = 'ITBI estimado: ' + brl(itbiV);
+  $('#compraBody').innerHTML = '<ul class="kv">'
+    + `<li><span>Entrada</span><b>${brl(S.entrada)}</b></li>`
+    + `<li><span>ITBI (${pct(+S.itbi || 0)})</span><b>${brl(itbiV)}</b></li>`
+    + `<li><span>Registro, avaliação e outras</span><b>${brl(custos - itbiV)}</b></li>`
+    + `<li><span>Custos da compra</span><b>${brl(custos)}</b></li>`
+    + `<li class="hl sep"><span>Total necessário na aquisição</span><b>${brl(S.entrada + custos)}</b></li></ul>`;
+}
+function renderLTV(){
+  $('#finOut').textContent = brl(R.pv);
+  $('#ltvOut').textContent = pct(R.ltv);
+  const al = $('#ltvAlert'), max = +S.ltvMax || 0;
+  if (S.entrada > S.valor){ al.hidden = false; al.className = 'alert danger'; al.innerHTML = 'A entrada é maior que o valor do imóvel.'; return; }
+  if (max > 0 && R.ltv > max + 1e-9){
+    const minEnt = S.valor * (1 - max / 100);
+    al.hidden = false; al.className = 'alert warn';
+    al.innerHTML = `Com um limite de financiamento de ${pct(max, max % 1 ? 2 : 0)}, a entrada mínima seria <b>${brl(minEnt)}</b>.<br><button class="btn sm" type="button" id="btnFixLtv">Ajustar entrada para ${brlShort(minEnt)}</button>`;
+    $('#btnFixLtv').onclick = () => { S.entrada = Math.round(minEnt * 100) / 100; syncInputs(); update(); };
+  } else al.hidden = true;
+}
+function renderPrazos(){
+  const list = PRAZOS_COMPARADOR.slice();
+  if (!list.includes(S.prazo)) list.push(S.prazo);
+  list.sort((a, b) => a - b);
+  $('#prazosBadge').textContent = sistemaPrim();
+  const withEx = R.hasExtras;
+  $('#tblPrazos thead').innerHTML = `<tr><th>Prazo</th><th>Parcelas</th><th>1ª parcela</th><th>Intermediária</th><th>Última</th><th>Juros totais</th><th>Total pago</th><th>Renda mínima</th></tr>`;
+  $('#tblPrazos tbody').innerHTML = list.map(n => {
+    const r = sim({ prazo:n, sistemaCalc:sistemaPrim() });
+    const parc = withEx && r.n !== n ? `${n} → ${r.n}` : n;
+    return `<tr class="${n === S.prazo ? 'hl' : ''}"><td>${fmtPrazo(n)}</td><td>${parc}</td><td>${brl(r.p1)}</td><td>${brl(r.pMeio)}</td><td>${brl(r.last)}</td><td>${brl(r.juros)}</td><td>${brl(r.totalPago)}</td><td>${r.p1 != null ? brl(r.p1 / (S.comp / 100)) : '—'}</td></tr>`;
+  }).join('');
+}
+function renderVS(){
+  const s = R.sac, p = R.price;
+  if (R.pv <= 0){ $('#vsBody').innerHTML = '<div class="empty">Sem valor a financiar.</div>'; return; }
+  const col = (t, r, a, z) => `<div><h4>${t}</h4><ul class="kv"><li><span>${a}</span><b>${brl(r.p1)}</b></li><li><span>${z}</span><b>${brl(r.last)}</b></li><li><span>Total de juros</span><b>${brl(r.juros)}</b></li><li><span>Total pago</span><b>${brl(r.totalPago)}</b></li>${r.n !== r.nContratado ? `<li><span>Parcelas pagas</span><b>${r.n}</b></li>` : ''}</ul></div>`;
+  let h = '<div class="vs">' + col('SAC', s, 'Primeira parcela', 'Última parcela') + col('PRICE', p, 'Parcela inicial', 'Parcela final aprox.') + '</div>';
+  h += '<ul class="kv" style="margin-top:10px">'
+    + `<li class="hl"><span>Diferença total de juros (PRICE − SAC)</span><b>${brl(p.juros - s.juros)}</b></li>`
+    + `<li><span>Diferença na 1ª parcela (SAC − PRICE)</span><b>${brl(s.p1 - p.p1)}</b></li>`
+    + `<li><span>Diferença no total pago (PRICE − SAC)</span><b>${brl(p.totalPago - s.totalPago)}</b></li></ul>`;
+  $('#vsBody').innerHTML = h;
+}
+function renderEntrada(){
+  const sys = sistemaPrim();
+  const cur = R.main;
+  const opts = [{ lbl:'Entrada atual', ent:S.entrada, cur:true }].concat(ENTRADAS_EXTRA.map(v => ({ lbl:'+ ' + brlShort(v), ent:Math.min(S.valor, S.entrada + v) })));
+  $('#entradaBody').innerHTML = opts.map(o => {
+    const r = sim({ entrada:o.ent, sistemaCalc:sys });
+    const fin = Math.max(0, S.valor - o.ent), ep = S.valor > 0 ? o.ent / S.valor * 100 : 0;
+    const dP = (cur.p1 || 0) - (r.p1 || 0), dJ = cur.juros - r.juros;
+    const det = o.cur ? `<span class="s">Financiado ${brl(fin)} · juros ${brl(r.juros)}</span><span></span>`
+      : `<span class="s">Financiado ${brl(fin)} (−${brlShort(R.pv - fin)})</span><span class="d good">−${brl(dP)}/mês</span><span class="s">Juros ${brl(r.juros)}</span><span class="d good">−${brl(dJ)} juros</span>`;
+    return `<div class="opt ${o.cur ? 'cur' : ''}"><span class="t">${o.lbl}: ${brl(o.ent)} <small>${pct(ep)}</small></span><span class="v">${r.p1 != null ? brl(r.p1) : '—'}</span>${det}</div>`;
+  }).join('') + `<p class="note">1ª parcela no sistema ${sys}. Economias em relação à entrada atual.</p>`;
+}
+function renderTaxa(){
+  const sys = sistemaPrim(), base = +S.taxaAA || 0;
+  const list = [-2, -1, 0, 1, 2].map(d => ({ d, t:Math.max(0, base + d) }));
+  const rs = list.map(o => Object.assign(o, { r:sim({ taxaAA:o.t, sistemaCalc:sys }) }));
+  const max = Math.max.apply(null, rs.map(o => o.r.p1 || 0)) || 1;
+  const cur = R.main;
+  $('#taxaBody').innerHTML = rs.map(o => {
+    const dif = (o.r.p1 || 0) - (cur.p1 || 0);
+    const dTxt = o.d === 0 ? 'taxa atual' : (dif < 0 ? '−' + brl(-dif) : '+' + brl(dif)) + '/mês';
+    return `<div class="opt ${o.d === 0 ? 'cur' : ''}"><span class="t">${pct(o.t)} a.a. <small>${o.d === 0 ? '' : (o.d > 0 ? '+' : '−') + Math.abs(o.d) + ' p.p.'}</small></span><span class="v">${brl(o.r.p1)}</span><span class="s">Juros totais ${brl(o.r.juros)}</span><span class="d ${dif < 0 ? 'good' : ''}">${dTxt}</span><div class="bar"><i style="width:${((o.r.p1 || 0) / max * 100).toFixed(1)}%"></i></div></div>`;
+  }).join('') + `<p class="note">1ª parcela no sistema ${sys}, mantendo os demais dados.</p>`;
+}
+
+/* ---------- tabela de amortização ---------- */
+const tbl = { open:false, filtro:'todas', sis:'SAC' };
+function renderTable(){
+  $('#tblSis').hidden = S.sistema !== 'COMP';
+  setSeg('#tblSis', tbl.sis); setSeg('#tblFiltro', tbl.filtro);
+  if (!tbl.open) return;
+  const r = S.sistema === 'COMP' ? (tbl.sis === 'PRICE' ? R.price : R.sac) : R.main;
+  const rows = r.rows;
+  const hasEx = rows.some(x => x.extra > 0), hasTR = rows.some(x => x.corr > 0);
+  const anual = tbl.filtro === 'anual';
+  $('#tbl thead').innerHTML = `<tr><th>${anual ? 'Ano' : 'Nº'}</th><th>${anual ? 'Período' : 'Data'}</th><th>Prestação</th><th>Juros</th><th>Amortização</th>${hasEx ? '<th>Extra</th>' : ''}<th>Seguro/tarifa</th><th>Total</th>${hasTR ? '<th>TR</th>' : ''}<th>Saldo devedor</th></tr>`;
+  const tr = (a, b, x) => `<tr><td>${a}</td><td>${b}</td><td>${brl(x.prest)}</td><td>${brl(x.juros)}</td><td>${brl(x.amort)}</td>${hasEx ? `<td>${x.extra ? brl(x.extra) : '—'}</td>` : ''}<td>${brl(x.custos)}</td><td>${brl(x.total)}</td>${hasTR ? `<td>${brl(x.corr)}</td>` : ''}<td>${brl(x.saldo)}</td></tr>`;
+  let html = '';
+  if (!rows.length) html = '<tr><td colspan="10">Sem parcelas.</td></tr>';
+  else if (anual){
+    for (let y = 0; y * 12 < rows.length; y++){
+      const g = rows.slice(y * 12, y * 12 + 12);
+      const s = g.reduce((a, x) => { ['prest','juros','amort','extra','custos','total','corr'].forEach(k => a[k] += x[k]); return a; }, { prest:0, juros:0, amort:0, extra:0, custos:0, total:0, corr:0 });
+      s.saldo = g[g.length - 1].saldo;
+      html += tr('Ano ' + (y + 1), labelMes(g[0].k) + ' – ' + labelMes(g[g.length - 1].k), s);
+    }
+  } else {
+    const list = tbl.filtro === 'ini' ? rows.slice(0, 12) : tbl.filtro === 'fim' ? rows.slice(-12) : rows;
+    html = list.map(x => tr(x.k, labelMes(x.k), x)).join('');
+  }
+  if (rows.length && (tbl.filtro === 'todas' || anual)){
+    html += `<tr class="tot"><td>Total</td><td></td><td>${brl(r.prest)}</td><td>${brl(r.juros)}</td><td>${brl(r.amort)}</td>${hasEx ? `<td>${brl(r.extras)}</td>` : ''}<td>${brl(r.custos)}</td><td>${brl(r.prest + r.custos)}</td>${hasTR ? `<td>${brl(r.corr)}</td>` : ''}<td>${brl(0)}</td></tr>`;
+  }
+  $('#tbl tbody').innerHTML = html;
+}
+
+/* ---------- gráfico (canvas puro, sem dependências) ---------- */
+const chart = { metric:'total', hover:null, geom:null };
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function chartSeries(){
+  const c1 = cssVar('--accent'), c2 = cssVar('--c2'), c3 = cssVar('--c3');
+  if (S.sistema === 'COMP') return [{ label:'SAC', color:c1, rows:R.sac.rows }, { label:'PRICE', color:c2, rows:R.price.rows }];
+  const l = [{ label:S.sistema + (R.main.extras > 0 ? ' com extras' : ''), color:c1, rows:R.main.rows }];
+  if (R.main.extras > 0) l.push({ label:'Sem extras', color:c3, rows:R.base.rows, dash:true });
+  return l;
+}
+function niceMax(v){ const e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
+function drawChart(){
+  const cv = $('#chart'), box = $('#chartBox');
+  const W = box.clientWidth; if (!W) return;
+  const H = Math.round(Math.min(340, Math.max(220, W * 0.62)));
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  const ser = chartSeries(), key = chart.metric;
+  const muted = cssVar('--muted'), line = cssVar('--line');
+  $('#chartLegend').innerHTML = ser.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('');
+  const nMax = Math.max(0, ...ser.map(s => s.rows.length));
+  if (!nMax){ chart.geom = null; ctx.fillStyle = muted; ctx.font = '14px system-ui'; ctx.fillText('Sem dados para exibir', 16, 30); return; }
+  let yMax = 0; ser.forEach(s => s.rows.forEach(r => { if (r[key] > yMax) yMax = r[key]; }));
+  yMax = niceMax(yMax > 0 ? yMax : 1);
+  const pad = { l:52, r:10, t:10, b:26 }, pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const X = k => pad.l + (nMax === 1 ? pw / 2 : (k - 1) / (nMax - 1) * pw);
+  const Y = v => pad.t + ph - (v / yMax) * ph;
+  ctx.font = '11px system-ui,-apple-system,sans-serif'; ctx.textBaseline = 'middle';
+  for (let g = 0; g <= 4; g++){
+    const v = yMax * g / 4, y = Y(v);
+    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.fillText(brlAxis(v), pad.l - 6, y);
+  }
+  const yrs = nMax / 12, stepY = Math.max(1, Math.ceil(yrs / 6));
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  if (nMax >= 24){ for (let a = stepY; a * 12 <= nMax; a += stepY) ctx.fillText(a + 'a', X(a * 12), H - pad.b + 7); }
+  else { const st = Math.max(1, Math.ceil(nMax / 6)); for (let m = st; m <= nMax; m += st) ctx.fillText(m + 'm', X(m), H - pad.b + 7); }
+  ser.forEach(s => {
+    ctx.strokeStyle = s.color; ctx.lineWidth = 2.2; ctx.lineJoin = 'round'; ctx.setLineDash(s.dash ? [6, 5] : []);
+    ctx.beginPath(); s.rows.forEach((r, i) => { const x = X(r.k), y = Y(r[key]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  chart.geom = { X, Y, pad, pw, nMax, W, H, ser };
+  if (chart.hover){
+    const k = chart.hover, x = X(k);
+    ctx.strokeStyle = muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + ph); ctx.stroke();
+    ser.forEach(s => { const r = s.rows[k - 1]; if (!r) return; ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x, Y(r[key]), 4, 0, Math.PI * 2); ctx.fill(); });
+  }
+}
+function chartPointer(e){
+  const g = chart.geom; if (!g) return;
+  const rect = $('#chart').getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  let k = g.nMax === 1 ? 1 : Math.round((px - g.pad.l) / g.pw * (g.nMax - 1)) + 1;
+  k = Math.max(1, Math.min(g.nMax, k));
+  chart.hover = k; drawChart();
+  const names = { total:'Parcela', saldo:'Saldo', juros:'Juros', amort:'Amortização' };
+  const tip = $('#chartTip');
+  tip.innerHTML = `<b>Parcela ${k}</b> · ${labelMes(k)}<br>` + g.ser.map(s => { const r = s.rows[k - 1]; return `${s.label}: <b>${r ? brl(r[chart.metric]) : 'quitado'}</b>`; }).join('<br>') + `<br><span style="opacity:.7">${names[chart.metric]}</span>`;
+  tip.hidden = false;
+  const x = g.X(k), tw = tip.offsetWidth;
+  tip.style.left = Math.max(0, Math.min(g.W - tw, x - tw / 2)) + 'px';
+  tip.style.top = '0px';
+}
+function chartLeave(){ chart.hover = null; $('#chartTip').hidden = true; drawChart(); }
+
+/* ---------- cenários ---------- */
+function loadCen(){ const l = lsGet(LS_CEN); return Array.isArray(l) ? l : []; }
+let cenCompOpen = false;
+function snapshot(){
+  const r = R.main;
+  return { valor:S.valor, entrada:S.entrada, entradaPct:R.entradaPct, fin:R.pv, banco:bancoNome(), taxa:S.taxaAA, prazo:S.prazo,
+    sistema:sistemaPrim(), p1:r.p1, last:r.last, renda:R.renda, juros:r.juros, total:r.totalPago, n:r.n, extras:r.extras };
+}
+function saveCen(){
+  if (R.pv <= 0){ toast('Não há valor financiado para salvar.'); return; }
+  const list = loadCen();
+  if (list.length >= MAX_CENARIOS){ toast('Limite de ' + MAX_CENARIOS + ' cenários. Exclua um para salvar outro.'); return; }
+  const used = list.map(c => c.letra); const letra = ['A','B','C','D'].find(l => !used.includes(l)) || String(list.length + 1);
+  list.push({ id:Date.now(), letra, state:clone(S), res:snapshot() });
+  list.sort((a, b) => a.letra.localeCompare(b.letra));
+  if (!lsSet(LS_CEN, list)){ toast('Não foi possível salvar neste navegador.'); return; }
+  renderCen(); toast('Cenário ' + letra + ' salvo');
+}
+function renderCen(){
+  const list = loadCen();
+  $('#cenBadge').textContent = list.length + '/' + MAX_CENARIOS;
+  $('#cenList').innerHTML = list.length ? '<div class="opt-list">' + list.map(c => `<div class="opt"><span class="t">Cenário ${c.letra}</span><span class="v">${brl(c.res.p1)}</span><span class="s">Entrada ${brlShort(c.res.entrada)} · ${pct(c.res.taxa)} · ${c.res.prazo}m · ${c.res.sistema}${c.res.extras > 0 ? ' · extras ' + brlShort(c.res.extras) : ''}</span><span class="d"><button class="btn ghost sm" type="button" data-load="${c.id}">Abrir</button> <button class="btn ghost sm" type="button" data-del="${c.id}">Excluir</button></span></div>`).join('') + '</div>'
+    : '<p class="muted" style="margin:0 0 4px;font-size:14px">Salve até 4 cenários para comparar (ex.: entradas de R$ 400 mil, R$ 500 mil e R$ 600 mil).</p>';
+  const cc = $('#cenComp'); cc.hidden = !cenCompOpen;
+  if (!cenCompOpen) return;
+  const cols = [{ nome:'Atual', res:snapshot() }].concat(list.map(c => ({ nome:'Cenário ' + c.letra, res:c.res })));
+  const rows = [['Imóvel', r => brl(r.valor)], ['Entrada', r => brl(r.entrada)], ['Entrada %', r => pct(r.entradaPct)], ['Financiado', r => brl(r.fin)], ['Banco', r => esc(r.banco)], ['Taxa', r => pct(r.taxa) + ' a.a.'], ['Prazo', r => r.prazo + ' meses'], ['Sistema', r => r.sistema], ['Extras', r => r.extras > 0 ? brl(r.extras) : '—'], ['Parcelas pagas', r => r.n], ['1ª parcela', r => brl(r.p1)], ['Última parcela', r => brl(r.last)], ['Renda mínima', r => brl(r.renda)], ['Juros totais', r => brl(r.juros)], ['Total pago', r => brl(r.total)]];
+  cc.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th></th>${cols.map(c => `<th>${c.nome}</th>`).join('')}</tr></thead><tbody>${rows.map(([l, f]) => `<tr class="${l === '1ª parcela' ? 'hl' : ''}"><td>${l}</td>${cols.map(c => `<td>${f(c.res)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ---------- resumo visual e texto ---------- */
+function renderResumo(){
+  const r = R.main, sys = sistemaPrim();
+  $('#resumoCard').innerHTML = `
+    <div class="r-top"><div><div class="r-title">Simulação de financiamento</div><div style="font-size:13px;opacity:.85;margin-top:2px">${esc(bancoNome())} · ${pct(S.taxaAA)} a.a.</div></div><div class="r-sys">${sys}${S.sistema === 'COMP' ? ' (x PRICE)' : ''}</div></div>
+    <div class="r-grid">
+      <div><span>Imóvel</span><b>${brl(S.valor)}</b></div>
+      <div><span>Entrada</span><b>${brl(S.entrada)}</b><small>${pct(R.entradaPct)}</small></div>
+      <div><span>Financiamento</span><b>${brl(R.pv)}</b></div>
+      <div><span>Prazo</span><b>${fmtPrazo(S.prazo)}</b><small>${S.prazo} meses${r.n < r.nContratado ? ' · quita em ' + r.n : ''}</small></div>
+    </div>
+    <div class="r-big"><span>1ª parcela</span><b>${brl(r.p1)}</b></div>
+    <div class="r-grid">
+      <div><span>Após 5 anos</span><b>${vOrQuit(r.p61, r).replace('class="good"', '')}</b></div>
+      <div><span>Última parcela</span><b>${brl(r.last)}</b></div>
+      <div><span>Renda mínima est.</span><b>${brl(R.renda)}</b><small>${pct(S.comp, 0)} de comprometimento</small></div>
+      <div><span>Juros totais</span><b>${brl(r.juros)}</b></div>
+      <div><span>Total pago ao banco</span><b>${brl(r.totalPago)}</b></div>
+      ${r.extras > 0 ? `<div><span>Amortizações extras</span><b>${brl(r.extras)}</b></div>` : ''}
+    </div>
+    <div class="r-foot">Simulação sem valor de proposta, aprovação ou oferta de crédito. Taxas, seguros, TR e condições variam conforme banco e perfil.</div>`;
+}
+function resumoTexto(){
+  const r = R.main, sys = sistemaPrim();
+  const L = ['Simulação de financiamento imobiliário', '',
+    'Imóvel: ' + brl(S.valor), 'Entrada: ' + brl(S.entrada) + ' (' + pct(R.entradaPct) + ')', 'Financiamento: ' + brl(R.pv),
+    'Banco: ' + bancoNome(), 'Taxa: ' + pct(S.taxaAA) + ' a.a. (≈ ' + pct(taxaMensal(S.taxaAA / 100) * 100, 4) + ' a.m.)',
+    'Prazo: ' + fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)', 'Sistema: ' + sys + (S.tr ? ' · TR est. ' + pct(S.trAA) + ' a.a.' : ''), '',
+    '1ª parcela: ' + brl(r.p1), 'Parcela após 5 anos: ' + (r.p61 == null ? '—' : brl(r.p61)), 'Última parcela: ' + brl(r.last),
+    'Renda mínima estimada: ' + brl(R.renda) + ' (' + pct(S.comp, 0) + ')', 'Juros totais: ' + brl(r.juros), 'Total pago ao banco: ' + brl(r.totalPago)];
+  if (r.extras > 0) L.push('Amortizações extras: ' + brl(r.extras) + ' → ' + (S.extraModo === 'prazo' ? 'quita em ' + r.n + ' parcelas' : 'prazo mantido') + ', economia de juros ' + brl(R.base.juros - r.juros));
+  if (S.sistema === 'COMP') L.push('', 'PRICE: 1ª parcela ' + brl(R.price.p1) + ' · juros ' + brl(R.price.juros));
+  L.push('', 'Simulação apenas — não é proposta de crédito.');
+  return L.join('\n');
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch(e){ try { const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch(e2){ return false; } }
+}
+async function share(){
+  const text = resumoTexto();
+  if (navigator.share){ try { await navigator.share({ title:'Simulação de financiamento', text }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  toast(await copyText(text) ? 'Resumo copiado para a área de transferência' : 'Não foi possível compartilhar');
+}
+function loadScript(src){ return new Promise((res, rej) => { if (window.html2canvas) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+async function saveImage(){
+  toast('Gerando imagem…');
+  try { await loadScript(HTML2CANVAS); } catch(e){ toast('Sem conexão para gerar a imagem. Use “Imprimir / PDF”.'); return; }
+  try {
+    const canvas = await window.html2canvas($('#resumoCard'), { scale:2, backgroundColor:null });
+    canvas.toBlob(async blob => {
+      if (!blob){ toast('Falha ao gerar imagem'); return; }
+      const name = 'simulacao-financiamento.png';
+      const coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+      if (coarse && navigator.canShare && typeof File !== 'undefined'){
+        const file = new File([blob], name, { type:'image/png' });
+        if (navigator.canShare({ files:[file] })){ try { await navigator.share({ files:[file], title:'Simulação de financiamento' }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+      }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast('Imagem salva');
+    }, 'image/png');
+  } catch(e){ toast('Falha ao gerar imagem. Use “Imprimir / PDF”.'); }
+}
+
+/* ---------- barra inferior ---------- */
+function renderBar(){
+  if (S.sistema === 'COMP'){ $('#bbarLbl').textContent = 'SAC · PRICE'; $('#bbarVal').textContent = brlShort(R.sac.p1 || 0) + ' · ' + brlShort(R.price.p1 || 0); $('#bbarVal').style.fontSize = '18px'; }
+  else { $('#bbarLbl').textContent = 'Parcela inicial · ' + S.sistema; $('#bbarVal').textContent = brl(R.main.p1); $('#bbarVal').style.fontSize = ''; }
+}
+
+/* ---------- controles ---------- */
+function setSeg(sel, v){ $$(sel + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
+function renderControls(){
+  $('#bankChips').innerHTML = BANCOS.map(b => `<button type="button" class="chip ${S.banco === b.id ? 'on' : ''}" data-bank="${b.id}">${b.nome}<small>${b.taxa != null ? pct(b.taxa) : (S.banco === 'custom' ? pct(S.taxaAA) : 'livre')}</small></button>`).join('');
+  $('#prazoChips').innerHTML = PRAZOS_ANOS.map(a => `<button type="button" class="chip ${S.prazo === a * 12 ? 'on' : ''}" data-anos="${a}">${a} anos</button>`).join('');
+  setSeg('#sistemaSeg', S.sistema); setSeg('#taxaUnit', S.taxaUnit); setSeg('#modoSeg', S.extraModo); setSeg('#chartMetric', chart.metric);
+  $('#prazoAnos').textContent = fmtPrazo(S.prazo);
+  $('#taxaSuf').textContent = S.taxaUnit === 'aa' ? '% a.a.' : '% a.m.';
+  const iM = taxaMensal(S.taxaAA / 100) * 100;
+  $('#taxaHint').textContent = S.taxaUnit === 'aa' ? pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m. (taxa equivalente)' : pct(iM, 4) + ' a.m. ≈ ' + pct(S.taxaAA) + ' a.a. (taxa equivalente)';
+  $('#trBox').hidden = !S.tr;
+  $('#trHint').textContent = '≈ ' + pct(taxaMensal((+S.trAA || 0) / 100) * 100, 4) + ' a.m.';
+  $('#modoHint').textContent = S.extraModo === 'prazo'
+    ? (sistemaPrim() === 'SAC' ? 'Mantém a amortização mensal e encurta o prazo.' : 'Mantém a prestação e encurta o prazo.')
+    : 'Mantém o prazo e recalcula parcelas menores.';
+  const r = S.rec;
+  $('#recHint').textContent = r.valor > 0 ? `1º aporte em ${labelMes(r.inicio)}, depois a cada ${r.cada} ${r.cada == 1 ? 'mês' : 'meses'}${r.qtd > 0 ? ', ' + r.qtd + ' vezes' : ' até quitar'}.` : '';
+  $$('#pontList .pont').forEach(el => { const i = +el.dataset.i; const d = el.querySelector('.pont-date'); if (d && S.pontuais[i]) d.textContent = pontDateTxt(S.pontuais[i]); });
+}
+function pontDateTxt(p){ return p.mes > S.prazo ? 'Após o fim do prazo — será ignorada' : 'Após a parcela ' + p.mes + ' · ' + labelMes(p.mes); }
+function renderPontuais(){
+  $('#pontList').innerHTML = S.pontuais.length ? S.pontuais.map((p, i) => `<div class="pont" data-i="${i}"><div class="inp sm"><em>Nº</em><input data-f="mes" inputmode="numeric" value="${p.mes}" aria-label="Parcela"></div><div class="inp sm"><em>R$</em><input data-f="valor" inputmode="decimal" value="${moneyIn(p.valor)}" aria-label="Valor"></div><button class="icon-btn" type="button" data-rm="${i}" aria-label="Remover">×</button><div class="pont-date">${pontDateTxt(p)}</div></div>`).join('')
+    : '<p class="muted" style="font-size:14px;margin:0 0 10px">Nenhuma amortização pontual.</p>';
+}
+
+const FIELDS = {
+  valor:'money', ltvMax:'pct', trAA:'pct', mip:'money', dfi:'money', tarifa:'money',
+  itbi:'pct', registro:'money', avaliacao:'money', outras:'money'
+};
+function fmtFor(type, v){ return type === 'money' ? moneyIn(v) : smart(+v || 0, 2); }
+function setVal(id, v){ const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = v; }
+function syncInputs(){
+  Object.keys(FIELDS).forEach(k => setVal(k, fmtFor(FIELDS[k], S[k])));
+  setVal('entrada', moneyIn(S.entrada));
+  setVal('entradaPct', smart(S.valor > 0 ? S.entrada / S.valor * 100 : 0, 2));
+  $('#entradaRange').value = S.valor > 0 ? Math.min(100, S.entrada / S.valor * 100) : 0;
+  setVal('taxa', S.taxaUnit === 'aa' ? smart(S.taxaAA, 2) : smart(taxaMensal(S.taxaAA / 100) * 100, 4));
+  setVal('prazoNum', S.prazo); $('#prazoRange').value = S.prazo;
+  setVal('inicio', S.inicio);
+  $('#trOn').checked = !!S.tr; $('#extrasOn').checked = !!S.extrasOn;
+  $('#comp').value = S.comp;
+  setVal('recValor', moneyIn(S.rec.valor)); setVal('recCada', S.rec.cada); setVal('recInicio', S.rec.inicio); setVal('recQtd', S.rec.qtd);
+  renderPontuais();
+}
+
+/* ---------- ciclo de atualização ---------- */
+let raf = 0;
+function update(){ cancelAnimationFrame(raf); raf = requestAnimationFrame(run); }
+function run(){
+  compute();
+  renderControls(); renderLTV(); renderHero(); renderExtrasRes(); renderRenda(); renderCompra();
+  renderPrazos(); renderVS(); renderEntrada(); renderTaxa(); renderTable(); renderCen(); renderResumo(); renderBar();
+  drawChart();
+  lsSet(LS_STATE, S);
+}
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+function goTo(sel){ const el = $(sel); el.scrollIntoView({ behavior:'smooth', block:'start' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+
+/* ---------- eventos ---------- */
+function onNum(id, fn, type){
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => { const v = type === 'int' ? parseInt(el.value.replace(/\D/g, ''), 10) : parseBR(el.value); fn(isFinite(v) ? v : 0); update(); });
+  el.addEventListener('focus', () => { try { el.select(); } catch(e){} });
+}
+Object.keys(FIELDS).forEach(k => {
+  onNum(k, v => { S[k] = Math.max(0, v); }, FIELDS[k]);
+  document.getElementById(k).addEventListener('blur', e => { e.target.value = fmtFor(FIELDS[k], S[k]); });
+});
+onNum('valor', v => { S.valor = Math.max(0, v); setVal('entradaPct', smart(S.valor > 0 ? S.entrada / S.valor * 100 : 0, 2)); $('#entradaRange').value = S.valor > 0 ? Math.min(100, S.entrada / S.valor * 100) : 0; });
+onNum('entrada', v => { S.entrada = Math.max(0, v); setVal('entradaPct', smart(S.valor > 0 ? S.entrada / S.valor * 100 : 0, 2)); $('#entradaRange').value = S.valor > 0 ? Math.min(100, S.entrada / S.valor * 100) : 0; });
+$('#entrada').addEventListener('blur', e => { e.target.value = moneyIn(S.entrada); });
+onNum('entradaPct', v => { v = Math.max(0, Math.min(100, v)); S.entrada = Math.round(S.valor * v) / 100; setVal('entrada', moneyIn(S.entrada)); $('#entradaRange').value = v; });
+$('#entradaPct').addEventListener('blur', e => { e.target.value = smart(S.valor > 0 ? S.entrada / S.valor * 100 : 0, 2); });
+$('#entradaRange').addEventListener('input', e => { const v = +e.target.value; S.entrada = Math.round(S.valor * v) / 100; setVal('entrada', moneyIn(S.entrada)); setVal('entradaPct', smart(v, 2)); update(); });
+
+onNum('taxa', v => {
+  v = Math.max(0, v);
+  S.taxaAA = S.taxaUnit === 'aa' ? v : taxaAnual(v / 100) * 100;
+  const b = BANCOS.find(x => x.id === S.banco);
+  if (!b || b.taxa == null || Math.abs(b.taxa - S.taxaAA) > 1e-9){ S.banco = 'custom'; S.customTaxa = S.taxaAA; }
+});
+$('#taxa').addEventListener('blur', e => { e.target.value = S.taxaUnit === 'aa' ? smart(S.taxaAA, 2) : smart(taxaMensal(S.taxaAA / 100) * 100, 4); });
+$('#taxaUnit').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.taxaUnit = b.dataset.v; syncInputs(); update(); });
+$('#bankChips').addEventListener('click', e => {
+  const c = e.target.closest('[data-bank]'); if (!c) return;
+  const b = BANCOS.find(x => x.id === c.dataset.bank);
+  S.banco = b.id;
+  if (b.taxa != null) S.taxaAA = b.taxa; else { S.taxaAA = +S.customTaxa || S.taxaAA; setTimeout(() => $('#taxa').focus(), 50); }
+  syncInputs(); update();
+});
+$('#sistemaSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.sistema = b.dataset.v; update(); });
+$('#prazoChips').addEventListener('click', e => { const c = e.target.closest('[data-anos]'); if (!c) return; S.prazo = +c.dataset.anos * 12; syncInputs(); update(); });
+onNum('prazoNum', v => { S.prazo = Math.max(1, Math.min(420, v || 1)); $('#prazoRange').value = S.prazo; }, 'int');
+$('#prazoNum').addEventListener('blur', e => { e.target.value = S.prazo; });
+$('#prazoRange').addEventListener('input', e => { S.prazo = +e.target.value; setVal('prazoNum', S.prazo); update(); });
+$('#inicio').addEventListener('change', e => { S.inicio = e.target.value || nextMonthStr(); update(); });
+$('#trOn').addEventListener('change', e => { S.tr = e.target.checked; update(); });
+$('#comp').addEventListener('input', e => { S.comp = +e.target.value; update(); });
+
+$('#extrasOn').addEventListener('change', e => { S.extrasOn = e.target.checked; update(); });
+$('#modoSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.extraModo = b.dataset.v; update(); });
+$('#addPont').addEventListener('click', () => {
+  const last = S.pontuais.length ? Math.max(...S.pontuais.map(p => p.mes)) : 0;
+  S.pontuais.push({ mes:Math.min(S.prazo, last + 12), valor:50000 });
+  S.extrasOn = true; $('#extrasOn').checked = true;
+  renderPontuais(); update();
+  const ins = $$('#pontList input[data-f="mes"]'); if (ins.length) ins[ins.length - 1].focus();
+});
+$('#pontList').addEventListener('input', e => {
+  const row = e.target.closest('.pont'); if (!row) return;
+  const p = S.pontuais[+row.dataset.i], f = e.target.dataset.f;
+  if (f === 'mes') p.mes = Math.max(1, parseInt(e.target.value.replace(/\D/g, ''), 10) || 1);
+  else p.valor = Math.max(0, parseBR(e.target.value) || 0);
+  update();
+});
+$('#pontList').addEventListener('focusout', e => {
+  const row = e.target.closest('.pont'); if (!row) return;
+  const p = S.pontuais[+row.dataset.i]; if (!p) return;
+  e.target.value = e.target.dataset.f === 'mes' ? p.mes : moneyIn(p.valor);
+});
+$('#pontList').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; S.pontuais.splice(+b.dataset.rm, 1); renderPontuais(); update(); });
+onNum('recValor', v => { S.rec.valor = Math.max(0, v); if (v > 0){ S.extrasOn = true; $('#extrasOn').checked = true; } });
+$('#recValor').addEventListener('blur', e => { e.target.value = moneyIn(S.rec.valor); });
+onNum('recCada', v => { S.rec.cada = Math.max(1, v || 1); }, 'int');
+onNum('recInicio', v => { S.rec.inicio = Math.max(1, v || 1); }, 'int');
+onNum('recQtd', v => { S.rec.qtd = Math.max(0, v || 0); }, 'int');
+['recCada','recInicio','recQtd'].forEach(id => $('#' + id).addEventListener('blur', e => { const k = { recCada:'cada', recInicio:'inicio', recQtd:'qtd' }[id]; e.target.value = S.rec[k]; }));
+
+$('#chartMetric').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; chart.metric = b.dataset.v; setSeg('#chartMetric', chart.metric); chartLeave(); });
+const cvs = $('#chart');
+cvs.addEventListener('pointermove', chartPointer); cvs.addEventListener('pointerdown', chartPointer); cvs.addEventListener('pointerleave', chartLeave);
+if (window.ResizeObserver) new ResizeObserver(() => drawChart()).observe($('#chartBox')); else window.addEventListener('resize', drawChart);
+if (window.matchMedia){ const mq = matchMedia('(prefers-color-scheme: dark)'); (mq.addEventListener ? mq.addEventListener('change', drawChart) : mq.addListener(drawChart)); }
+
+$('#btnTabela').addEventListener('click', () => { tbl.open = !tbl.open; $('#tableBox').hidden = !tbl.open; $('#btnTabela').textContent = tbl.open ? 'Ocultar parcelas' : 'Ver todas as parcelas'; renderTable(); });
+$('#tblFiltro').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; tbl.filtro = b.dataset.v; renderTable(); });
+$('#tblSis').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; tbl.sis = b.dataset.v; renderTable(); });
+
+$('#btnSalvarCen').addEventListener('click', saveCen); $('#btnSalvarCen2').addEventListener('click', saveCen);
+$('#btnCompCen').addEventListener('click', () => { cenCompOpen = !cenCompOpen; $('#btnCompCen').textContent = cenCompOpen ? 'Ocultar comparação' : 'Comparar cenários'; renderCen(); });
+$('#cenList').addEventListener('click', e => {
+  const ld = e.target.closest('[data-load]'), dl = e.target.closest('[data-del]');
+  let list = loadCen();
+  if (ld){ const c = list.find(x => String(x.id) === ld.dataset.load); if (c){ S = normState(c.state); syncInputs(); update(); goTo('#resultado'); toast('Cenário ' + c.letra + ' aberto'); } }
+  if (dl){ list = list.filter(x => String(x.id) !== dl.dataset.del); lsSet(LS_CEN, list); renderCen(); }
+});
+
+$('#btnGerar').addEventListener('click', () => goTo('#resumoWrap'));
+$('#btnShare').addEventListener('click', share); $('#btnShareTop').addEventListener('click', share);
+$('#btnCopy').addEventListener('click', async () => toast(await copyText(resumoTexto()) ? 'Resumo copiado' : 'Não foi possível copiar'));
+$('#btnImg').addEventListener('click', saveImage);
+$('#btnPrint').addEventListener('click', () => window.print());
+$('#btnVer').addEventListener('click', () => goTo('#resultado'));
+$('#btnReset').addEventListener('click', () => { if (!confirm('Restaurar os valores iniciais? (Cenários salvos são mantidos.)')) return; S = normState(null); chart.metric = 'total'; syncInputs(); update(); toast('Valores restaurados'); });
+
+syncInputs(); run();
+})();
+</script>
+</body>
+</html>
