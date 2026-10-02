@@ -27,21 +27,40 @@ Simulador de financiamento imobiliário brasileiro que responde a uma pergunta: 
 
 | Trecho | Conteúdo |
 |---|---|
-| `<style>` | Tokens de cor em `:root` (claro) + `@media (prefers-color-scheme: dark)`; CSS de impressão em `@media print` |
-| `<main>` | Coluna `.col-inputs` (cards de entrada) e `.col-results` (cards de resultado) |
+| `<style>` | Tokens em `:root` (claro) + bloco dark (`prefers-color-scheme` e `[data-theme]`); cores de série `--s-*`; `@media print` |
+| `<header>` | Marca, valor da 1ª parcela ao vivo (`#live`) e botão Relatório |
+| `<main>` | `#tab-dados` (entradas, em `<aside>`) e `.mainc` com as abas `#tab-resumo`, `#tab-graficos`, `#tab-comparar`, `#tab-tabela` |
+| `#relModal` | Pré-visualização do relatório em `<iframe srcdoc>` |
 | 1º `<script>` entre `// ENGINE-START` e `// ENGINE-END` | **Motor de cálculo puro**, sem DOM: `taxaMensal`, `taxaAnual`, `pmt`, `buildExtras`, `simular`, `resumir` |
-| 2º `<script>` (IIFE) | Configuração, estado, formatação, renderização, gráfico em canvas, eventos |
+| 2º `<script>` (IIFE) | Configuração, estado, formatação, motor de gráficos, renderização, relatório, abas, eventos |
+
+### Design
+
+- Identidade: azul-marinho como tinta (`--ink`/`--primary`), latão (`--brass`) só para destaques (pontos-chave da curva, número do cartão), fundo papel azulado. Fonte **Schibsted Grotesk** (Google Fonts) com números tabulares; sem internet, usa a fonte do sistema.
+- **Navegação:** no celular (< 1024px) há uma aba visível por vez e barra inferior `.bnav` (Dados, Resumo, Gráficos, Comparar, Tabela). No desktop, Dados fica fixo à esquerda e as outras abas aparecem no topo (`.tabs`). A aba atual é salva em `sfi_tab_v1`. Use `setTab(id)` e `applyTab()`.
+- O destaque principal é o número da 1ª parcela (`moneyHTML`) com a curva de parcelas (`cvHero`). Os pontos em latão marcam 5 anos, meio e última, e batem com os itens marcados em `#heroKeys`.
+
+### Gráficos (canvas puro, sem biblioteca)
+
+- Motor: `drawChart(cv, spec, theme, hover, W, H, dpr)` com tipos `line`, `stack` (barras empilhadas), `hbar` e `donut`. Tooltip por toque/mouse, legenda automática para 2 ou mais séries.
+- **Specs usam papéis de cor**, não hex (`'amort'`, `'juros'`, `'entrada'`, `'extra'`, `'tr'`, `'seg'`, `'custos'`, `'sac'`, `'price'`, `'base'`, `'main'`), resolvidos por `TH.light`/`TH.dark`. O mesmo spec desenha na tela e no relatório (`chartImage`, sempre claro).
+- Paleta validada para daltonismo (claro e escuro). Mantenha os papéis: amortização = azul, juros = laranja, entrada/extras = verde-água, TR = amarelo, seguros = magenta, custos de compra/PRICE = violeta, "sem extras" = cinza tracejado. `TH` e as variáveis `--s-*` do CSS devem ficar sincronizados.
+- Gráficos registrados com `mount(id, specFn)`: `cvHero`, `cvEvo` (métrica em `evoMetric`), `cvAnual`, `cvPat` (quanto do imóvel é seu), `cvAcum` (cruzamento entre juros e amortização acumulados), `cvDonut`, `cvVS`, `cvPrazoP`, `cvPrazoJ`. Um `ResizeObserver` redesenha cada um quando a aba aparece.
+
+### Relatório
+
+`buildReport()` gera um HTML A4 independente (tema claro, gráficos em PNG embutidos). O modal oferece Imprimir/PDF, Baixar (.html) e Abrir em nova aba. Ao adicionar uma seção na tela, avalie incluí-la no relatório.
 
 ### Configuração (topo do 2º script) — os pontos editados com mais frequência
 
 - `BANCOS` — presets `{ id, nome, taxa }` em % a.a. efetiva. `taxa: null` corresponde a "Personalizado".
 - `PRAZOS_ANOS` (chips 10–35 anos), `PRAZOS_COMPARADOR` (240/300/360/420 meses), `ENTRADAS_EXTRA` (+50k/+100k/+200k), `MAX_CENARIOS` (4).
-- `DEFAULTS` — dados iniciais de demonstração: imóvel R$ 1.600.000, entrada R$ 400.000, 10,99% a.a., 360 meses, SAC, comprometimento de renda de 30%, TR desligada, seguros R$ 0, LTV máximo de 80%, ITBI de 3%.
-- Chaves do localStorage: `sfi_state_v1` (último estado) e `sfi_cenarios_v1` (até 4 cenários). Ao mudar o formato do estado, faça o bump da versão da chave ou ajuste `normState()`.
+- `DEFAULTS` — dados iniciais de demonstração: imóvel R$ 1.600.000, entrada R$ 400.000, 10,99% a.a., 360 meses, SAC, comprometimento de renda de 30%, TR desligada, seguros R$ 0, LTV máximo de 80%, ITBI de 3%, renda 0 (opcional).
+- Chaves do localStorage: `sfi_state_v1` (último estado), `sfi_cenarios_v1` (até 4 cenários) e `sfi_tab_v1` (aba atual). Ao mudar o formato do estado, faça o bump da versão da chave ou ajuste `normState()`.
 
 ### Fluxo
 
-`evento` → altera o objeto de estado `S` → `update()` (agrupa via requestAnimationFrame) → `run()` → `compute()` preenche `R` (`R.sac`, `R.price`, `R.main`, `R.base` = sem extras) → funções `render*()` → `drawChart()` → salva `S` no localStorage.
+`evento` → altera o objeto de estado `S` → `update()` (agrupa via requestAnimationFrame) → `run()` → `compute()` preenche `R` (`R.sac`, `R.price`, `R.main`, `R.base` = sem extras, `R.ann` = resumo anual, `R.cc` = custos da compra) → funções `render*()` → `paintAll()` → salva `S` no localStorage.
 
 Para simular variações (comparador de prazos, entrada, taxa), use `sim(overrides)`, por exemplo `sim({ prazo: 300, sistemaCalc: 'PRICE' })`.
 
@@ -88,12 +107,19 @@ node -e "const h=require('fs').readFileSync('index.html','utf8');eval(h.split('/
 
 ## Funcionalidades (mapa para localizar código)
 
-Dados do imóvel e LTV com alerta de entrada mínima (`renderLTV`) · presets de bancos e taxa em a.a./a.m. · SAC / PRICE / comparar · prazo por chips, slider e número (1–420) · TR estimada · **amortizações extras** pontuais e recorrentes, reduzindo prazo ou parcela (`renderExtrasRes`, `renderPontuais`) · custos mensais (MIP, DFI, tarifa) · custos da compra (ITBI %, registro, avaliação, outras) · card "Sua simulação" (`renderHero`) · renda mínima (`renderRenda`, 20–40%) · comparador de prazos (`renderPrazos`) · SAC x PRICE (`renderVS`) · gráfico em canvas puro com Parcela/Saldo/Juros/Amortização e tooltip por toque (`drawChart`, `chartPointer`) · tabela completa/anual/12 primeiras/12 últimas (`renderTable`) · "E se eu aumentar a entrada?" (`renderEntrada`) · impacto da taxa ±2 p.p. (`renderTaxa`) · cenários A–D com comparação (`saveCen`, `renderCen`) · resumo visual, compartilhar (Web Share API), copiar, salvar imagem e imprimir/PDF (`renderResumo`, `resumoTexto`, `share`, `saveImage`) · barra inferior fixa no mobile (`renderBar`).
+**Dados:** imóvel e entrada com LTV e alerta de entrada mínima (`renderLTV`) · presets de bancos e taxa em a.a./a.m. · SAC / PRICE / comparar · prazo por chips, slider e número (1–420) · amortizações extras pontuais e recorrentes (`renderPontuais`) · renda opcional e comprometimento · TR · seguros/tarifa · custos da compra.
+**Resumo:** 1ª parcela e curva (`renderHero`, `specHero`) · indicadores (`renderTiles`) · efeito das extras (`renderExtrasRes`) · custo total do imóvel em barra 100% (`renderCusto`) · renda com medidor (`renderRenda`) · dinheiro na aquisição (`renderCompra`) · cartão para compartilhar (`renderResumo`, `saveImage`, `share`, `resumoTexto`).
+**Gráficos:** evolução mês a mês, juros x amortização por ano, quanto do imóvel é seu, acumulados com ponto de virada, composição do total pago (`renderLeads` gera os textos dinâmicos).
+**Comparar:** SAC x PRICE (`renderVS`, `cvVS`) · prazos com barras e tabela (`renderPrazos`, `prazoList`) · entrada (`renderEntrada`) · taxa ±2 p.p. (`renderTaxa`) · cenários A–D (`saveCen`, `renderCen`).
+**Tabela:** completa, por ano, 12 primeiras e 12 últimas (`renderTable`, só renderiza com a aba ativa) · exportação CSV no padrão brasileiro (`exportCSV`).
+**Relatório:** `openReport` → `buildReport`.
 
 ## Ao modificar
 
 - Antes de entregar, rode o teste Node acima e confira os valores de referência.
-- Teste em viewport de 375px nos modos claro e escuro (Playwright está disponível nas sessões em nuvem). Não pode haver rolagem horizontal: `document.documentElement.scrollWidth` deve ser 375.
+- Teste em viewport de 375px nos modos claro e escuro, em **todas as abas** (Playwright está disponível nas sessões em nuvem). Não pode haver rolagem horizontal: `document.documentElement.scrollWidth` deve ser 375. Teste também o desktop (1440px) e o relatório.
+- Valores monetários longos não podem quebrar linha nem ser cortados em cards estreitos: use `white-space:nowrap` com `clamp()` no tamanho da fonte.
+- Copy em pt-BR, frases curtas, sentence case; sem rótulos em caixa alta.
 - Novas cores devem ser tokens em `:root`, com equivalente no bloco dark.
 - Formate valores com `brl()`, `pct()`, `num()` e `smart()`, e leia entradas com `parseBR()` (aceita `1.600.000`, `1600000`, `10,99`).
 - Para novos campos numéricos simples, registre-os em `FIELDS` (`'money'` ou `'pct'`). O sync de input, o blur e a formatação já tratam esses campos.

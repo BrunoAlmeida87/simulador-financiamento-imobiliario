@@ -14,9 +14,12 @@ Simulador mobile first em um único arquivo HTML: SAC x PRICE, TR, seguros, amor
 - TR estimada, seguros MIP/DFI e tarifa administrativa
 - **Amortizações extras** pontuais ou recorrentes (ex.: 13º todo ano), reduzindo **prazo** ou **parcela**, com a economia de juros calculada
 - Renda mínima estimada, comparador de prazos, impacto de entrada e de taxa
-- Gráfico interativo e tabela de amortização completa ou anual
+- Interface em abas (Dados, Resumo, Gráficos, Comparar, Tabela), com barra inferior no celular
+- Gráficos interativos: evolução da parcela, juros x amortização por ano, quanto do imóvel já é seu, juros e amortização acumulados, composição do total pago, SAC x PRICE e prazos
+- **Relatório completo** em A4 com gráficos e tabelas, para imprimir, salvar em PDF ou baixar
+- Tabela de amortização completa ou anual, com exportação para planilha (CSV)
 - Até 4 cenários salvos no navegador
-- Compartilhar, copiar resumo, salvar como imagem e imprimir/PDF
+- Cartão para compartilhar (imagem), compartilhar e copiar resumo
 - Modo claro e escuro automáticos
 
 ## Uso
