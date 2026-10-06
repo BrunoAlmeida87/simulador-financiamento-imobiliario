@@ -2373,6 +2373,36 @@ function run(){
 }
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
 
+/* ---------- máscara dos campos em R$: os pontos de milhar aparecem enquanto você digita ----------
+   Vale para todo campo com prefixo "R$" (inclusive os criados depois, como as amortizações pontuais).
+   Roda na fase de captura, antes dos handlers de cada campo, que então leem o valor já formatado. */
+const isMoney = el => !!(el && el.tagName === 'INPUT' && el.closest('.inp') && ((el.closest('.inp').querySelector('em') || {}).textContent || '').trim() === 'R$');
+function maskMoney(raw){
+  const s = String(raw).replace(/[^\d,]/g, ''), i = s.indexOf(',');
+  const int = (i >= 0 ? s.slice(0, i) : s).replace(/^0+(?=\d)/, '');
+  const dec = i >= 0 ? s.slice(i + 1).replace(/,/g, '').slice(0, 2) : null;
+  const g = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return dec != null ? (g || '0') + ',' + dec : g;
+}
+document.addEventListener('beforeinput', e => {
+  const el = e.target; if (!isMoney(el)) return;
+  const a = el.selectionStart; if (a == null || a !== el.selectionEnd) return;
+  // apagar sobre um ponto de milhar apaga o dígito ao lado (senão o ponto "volta" e o cursor trava)
+  if (e.inputType === 'deleteContentBackward' && el.value[a - 1] === '.') el.setSelectionRange(a - 1, a - 1);
+  else if (e.inputType === 'deleteContentForward' && el.value[a] === '.') el.setSelectionRange(a + 1, a + 1);
+}, true);
+document.addEventListener('input', e => {
+  const el = e.target; if (!isMoney(el)) return;
+  let v = el.value, c = el.selectionStart == null ? v.length : el.selectionStart;
+  // ponto ou vírgula digitado vira a vírgula dos centavos (teclados que só têm ponto)
+  if (e.inputType === 'insertText' && (e.data === '.' || e.data === ',') && c > 0) v = v.slice(0, c - 1).replace(/,/g, '') + ',' + v.slice(c).replace(/,/g, '');
+  const sig = v.slice(0, c).replace(/[^\d,]/g, '').replace(/^0+(?=\d)/, '').length, out = maskMoney(v);
+  if (out === el.value) return;
+  el.value = out;
+  let pos = 0, n = 0; while (pos < out.length && n < sig){ if (/[\d,]/.test(out[pos])) n++; pos++; }
+  try { el.setSelectionRange(pos, pos); } catch(x){}
+}, true);
+
 /* ---------- eventos ---------- */
 function onNum(id, fn, type){
   const el = document.getElementById(id);

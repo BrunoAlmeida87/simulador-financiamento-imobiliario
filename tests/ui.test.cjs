@@ -96,6 +96,27 @@ async function auditarLayout(abrir){
   await pg.click('#tiles .q'); await pg.waitForTimeout(100);
   check('glossário abre ao tocar no "?"', await pg.isVisible('#pop') && (await txt(pg, '#popT')).includes('CET'));
   await pg.click('#popClose');
+  // Máscara: os pontos de milhar aparecem enquanto digita
+  await pg.click('#bnav [data-tab=dados]');
+  await pg.fill('#valor', '');
+  const passos = [];
+  for (const ch of '1600000'){ await pg.locator('#valor').pressSequentially(ch); passos.push(await pg.inputValue('#valor')); }
+  check('máscara: pontos aparecem enquanto digita', passos.join(' ') === '1 16 160 1.600 16.000 160.000 1.600.000', passos.join(' '));
+  check('máscara: o valor digitado já vale no cálculo', (await txt(pg, '#liveVal')) === 'R$ 13.805,76', await txt(pg, '#liveVal'));
+  for (let i = 0; i < 3; i++) await pg.keyboard.press('Backspace');
+  const aposApagar = await pg.inputValue('#valor');
+  await pg.evaluate(() => document.getElementById('valor').setSelectionRange(2, 2));   // cursor logo depois do ponto: "1.|600"
+  await pg.keyboard.press('Backspace');
+  const sobrePonto = await pg.inputValue('#valor');
+  await pg.keyboard.press('End'); await pg.locator('#valor').pressSequentially('.5');
+  const centavos = await pg.inputValue('#valor');
+  check('máscara: apagar, apagar sobre o ponto e centavos', aposApagar === '1.600' && sobrePonto === '600' && centavos === '600,5', [aposApagar, sobrePonto, centavos].join(' | '));
+  await pg.evaluate(() => document.getElementById('valor').setSelectionRange(0, 0));
+  await pg.locator('#valor').pressSequentially('1');
+  check('máscara: cursor fica no lugar ao editar no meio', (await pg.inputValue('#valor')) === '1.600,5' && (await pg.evaluate(() => document.getElementById('valor').selectionStart)) === 1);
+  await pg.fill('#valor', '1600000'); await pg.locator('#valor').blur(); await pg.waitForTimeout(150);
+  check('máscara: campo formatado também no preenchimento direto', (await pg.inputValue('#valor')) === '1.600.000' && (await txt(pg, '#liveVal')) === 'R$ 13.805,76');
+
   // Dados: seguros em percentual
   await pg.click('#bnav [data-tab=dados]');
   await pg.evaluate(() => document.querySelectorAll('details.grp').forEach(d => d.open = true));
