@@ -1,0 +1,33 @@
+name: Atualizar taxas dos bancos
+on:
+  schedule:
+    - cron: '17 11 * * 1'   # toda segunda-feira, 08:17 (horário de Brasília)
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/scripts/atualizar-taxas.mjs', '.github/workflows/taxas.yml']
+permissions:
+  contents: write
+  pages: write
+concurrency: taxas
+jobs:
+  taxas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Consultar o Banco Central
+        run: node .github/scripts/atualizar-taxas.mjs
+      - name: Salvar se mudou
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain taxas.json)" ]; then echo "Taxas sem mudança."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add taxas.json
+          git commit -m "Atualiza taxas dos bancos (Banco Central)"
+          git push
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Publicação do Pages segue pelo push."
