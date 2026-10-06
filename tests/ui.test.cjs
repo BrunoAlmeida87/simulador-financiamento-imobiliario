@@ -103,6 +103,22 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g
   check('link limpo da barra de endereço', !(await l.pg.evaluate(() => location.hash)));
   await l.ctx.close();
 
+  // Taxas do Banco Central (taxas.json servido por HTTP, como no GitHub Pages)
+  const http = require('http'), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sim-'));
+  ['index.html', 'sw.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable.png'].forEach(f => fs.copyFileSync(path.resolve(__dirname, '..', f), path.join(dir, f)));
+  fs.writeFileSync(path.join(dir, 'taxas.json'), JSON.stringify({ mercado:{ periodo:'ago/2026', bancos:{ caixa:12.12, itau:12.06 } } }));
+  const srv = http.createServer((q, r) => { const f = path.join(dir, decodeURIComponent(q.url.split('?')[0]).replace(/^\/$/, '/index.html')); if (!f.startsWith(dir) || !fs.existsSync(f)){ r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type':f.endsWith('.json') || f.endsWith('.webmanifest') ? 'application/json' : f.endsWith('.js') ? 'text/javascript' : f.endsWith('.png') ? 'image/png' : f.endsWith('.svg') ? 'image/svg+xml' : 'text/html; charset=utf-8' }); fs.createReadStream(f).pipe(r); });
+  await new Promise(ok => srv.listen(0, '127.0.0.1', ok));
+  const t = await abrir({}, `http://127.0.0.1:${srv.address().port}/`);
+  await t.pg.waitForTimeout(600);
+  const i = Math.pow(1.1212, 1 / 12) - 1, esperado = 'R$ ' + (1200000 / 360 + 1200000 * i).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  check('taxa da Caixa vem do Banco Central (12,12%)', (await txt(t.pg, '#liveVal')) === esperado, (await txt(t.pg, '#liveVal')) + ' ≠ ' + esperado);
+  await t.pg.click('#bnav [data-tab=dados]');
+  check('chips e aviso mostram a fonte e o mês', (await txt(t.pg, '#bankChips')).includes('12,06%') && (await txt(t.pg, '#taxasNota')).includes('ago/2026'));
+  await t.pg.fill('#taxa', '9,5'); await t.pg.waitForTimeout(150);
+  check('taxa digitada não é sobrescrita', (await txt(t.pg, '#liveVal')) !== esperado);
+  await t.ctx.close(); srv.close();
+
   // Desktop
   const d = await abrir({ viewport:{ width:1440, height:900 }, isMobile:false, hasTouch:false });
   for (const t of ['resumo', 'graficos', 'comparar', 'planejar', 'tabela']){ await d.pg.click(`#topTabs [data-tab=${t}]`); await d.pg.waitForTimeout(200); }

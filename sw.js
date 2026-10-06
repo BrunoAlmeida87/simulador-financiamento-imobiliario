@@ -1,6 +1,6 @@
 /* Service worker do simulador: permite instalar como app e usar offline.
-   Página: rede primeiro (pega atualizações), cache como reserva. Demais arquivos: cache primeiro. */
-const CACHE = 'simulador-v2';
+   Página e taxas.json: rede primeiro (pega atualizações), cache como reserva. Demais arquivos: cache primeiro. */
+const CACHE = 'simulador-v3';
 const ARQUIVOS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable.png'];
 
 self.addEventListener('install', e => {
@@ -13,9 +13,10 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (req.mode === 'navigate'){
-    e.respondWith(fetch(req).then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', cp)); return res; })
-      .catch(() => caches.match('./index.html')));
+  if (req.mode === 'navigate' || url.pathname.endsWith('/taxas.json')){
+    const chave = req.mode === 'navigate' ? './index.html' : req;
+    e.respondWith(fetch(req).then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put(chave, cp)); return res; })
+      .catch(() => caches.match(chave)));
     return;
   }
   const fonte = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';

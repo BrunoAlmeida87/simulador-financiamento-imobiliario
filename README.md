@@ -9,7 +9,7 @@ Simulador mobile first em um único arquivo HTML: SAC x PRICE, TR, seguros, amor
 ## Funcionalidades
 
 - Entrada em R$ ou em %, valor financiado e LTV com alerta de limite do banco
-- Presets de bancos (editáveis no código) e taxa anual ↔ mensal **equivalente**
+- **Taxas dos bancos atualizadas automaticamente** toda semana com a média praticada informada pelo Banco Central; taxa anual ↔ mensal **equivalente**
 - SAC, PRICE ou comparação lado a lado; prazo de 1 a 420 meses
 - Correção pela TR ou pelo IPCA, seguros MIP/DFI em percentual (como os bancos cobram) ou valor fixo, tarifa
 - **CET (custo efetivo total)**, para comparar bancos
@@ -33,7 +33,7 @@ Simulador mobile first em um único arquivo HTML: SAC x PRICE, TR, seguros, amor
 
 Abra o `index.html` no navegador. Não precisa de instalação nem de servidor.
 
-Para alterar as taxas de referência dos bancos, edite a constante `BANCOS` no início do segundo `<script>`. As regras do FGTS ficam em `FGTS_TETO`, `FGTS_INTERVALO` e `FGTS_REND_AA`.
+As taxas dos bancos vêm do `taxas.json`, atualizado toda segunda-feira pelo GitHub Actions (aba Actions → "Atualizar taxas dos bancos" → Run workflow para atualizar na hora). Os valores da constante `BANCOS` no código só valem quando o arquivo é aberto sem internet. As regras do FGTS ficam em `FGTS_TETO`, `FGTS_INTERVALO` e `FGTS_REND_AA`.
 
 ## Testes
 

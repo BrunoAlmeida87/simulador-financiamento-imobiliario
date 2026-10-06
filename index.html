@@ -421,7 +421,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
       <div class="inp"><input id="taxa" inputmode="decimal" autocomplete="off" aria-label="Taxa de juros"><em id="taxaSuf">% a.a.</em></div>
       <div class="hint" id="taxaHint"></div>
     </div>
-    <p class="note">As taxas são referências e podem variar conforme perfil, relacionamento, renda, imóvel e condições do banco.</p>
+    <p class="note" id="taxasNota">As taxas são referências e podem variar conforme perfil, relacionamento, renda, imóvel e condições do banco.</p>
   </section>
 
   <section class="grp">
@@ -862,6 +862,7 @@ const MAX_CENARIOS = 4;
 const FGTS_TETO = 2250000;
 const FGTS_INTERVALO = 24;
 const FGTS_REND_AA = 3;
+const TAXAS_URL = 'taxas.json';   // gerado toda semana pelo GitHub Actions a partir do Banco Central
 const LS_STATE = 'sfi_state_v1', LS_CEN = 'sfi_cenarios_v1', LS_TAB = 'sfi_tab_v1';
 const HTML2CANVAS = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const FONT_URL = 'https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap';
@@ -880,7 +881,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 function nextMonthStr(){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
 const DEFAULTS = {
-  valor:1600000, entrada:400000, banco:'caixa', customTaxa:10.99, taxaAA:10.99, taxaUnit:'aa',
+  valor:1600000, entrada:400000, banco:'caixa', customTaxa:10.99, taxaAA:10.99, taxaUnit:'aa', taxaAuto:true,
   sistema:'SAC', prazo:360, indice:'nenhum', trAA:1.5, ipcaAA:4, comp:30, ltvMax:80, renda:0,
   segModo:'pct', mipPct:0, dfiPct:0, mip:0, dfi:0, tarifa:0,
   itbi:3, registro:0, avaliacao:0, outras:0, inicio:nextMonthStr(),
@@ -1766,7 +1767,7 @@ table.kv td:last-child{font-weight:700}
 </div>
 
 <section><h2>Dados da simulação</h2><div class="cols">
-${kv([['Valor do imóvel', brl(S.valor)], ['Entrada', brl(S.entrada) + ' (' + pct(R.entradaPct) + ')'], ['Valor financiado', brl(R.pv)], ['Percentual financiado (LTV)', pct(R.ltv) + (S.ltvMax ? ' (limite ' + pct(S.ltvMax, 0) + ')' : '')], ['Banco', esc(bancoNome())], ['Taxa de juros', pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m.']])}
+${kv([['Valor do imóvel', brl(S.valor)], ['Entrada', brl(S.entrada) + ' (' + pct(R.entradaPct) + ')'], ['Valor financiado', brl(R.pv)], ['Percentual financiado (LTV)', pct(R.ltv) + (S.ltvMax ? ' (limite ' + pct(S.ltvMax, 0) + ')' : '')], ['Banco', esc(bancoNome())], ['Taxa de juros', pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m.' + (taxaOficial() ? ' (média praticada em ' + esc(TAXAS.mercado.periodo) + ', Banco Central)' : '')]])}
 ${kv([['Prazo', fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)'], ['Sistema', sistemaLabel()], ['1ª parcela em', labelMes(1) || '—'], ['Correção do saldo', idxOn() ? idxNome() + ' de ' + pct(idxAA()) + ' a.a. (estimada)' : 'Não considerada'], ['Seguros', segDesc], ['Tarifa', brl(+S.tarifa || 0) + '/mês'], ['Amortizações extras', esc(extrasDesc())], ['FGTS', fgtsAtivo() ? [R.fgtsEntrada > 0 ? brl(R.fgtsEntrada) + ' na entrada' : '', R.fgtsAmort > 0 ? brl(R.fgtsAmort) + ' em amortizações a cada 2 anos' : ''].filter(Boolean).join('; ') || 'Ativo' : 'Não usado'], ['Imóvel na planta', R.obra.on ? R.obra.n + ' meses até as chaves, ' + (R.obra.modo === 'obra' ? 'juros de obra de ' + brl(R.obra.juros) : 'INCC de ' + pct(S.planta.incc, 1) + ' a.a. (+' + brl(R.obra.inccAdd) + ')') : 'Não']])}
 </div></section>
 
@@ -2004,6 +2005,22 @@ function applyMeta(){
   syncInputs(); update(); toast('Amortização de ' + brl(m.mes) + ' por mês aplicada');
 }
 
+/* ---------- taxas dos bancos (Banco Central, via taxas.json) ---------- */
+let TAXAS = null;
+const taxaOficial = () => !!(TAXAS && S.taxaAuto && S.banco !== 'custom' && TAXAS.mercado.bancos[S.banco] != null);
+function applyTaxas(){
+  if (!TAXAS) return;
+  BANCOS.forEach(b => { const v = TAXAS.mercado.bancos[b.id]; if (typeof v === 'number' && v > 0 && v < 40) b.taxa = v; });
+  if (S.taxaAuto && S.banco !== 'custom'){ const b = BANCOS.find(x => x.id === S.banco); if (b && b.taxa != null) S.taxaAA = b.taxa; }
+}
+function loadTaxas(){
+  if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
+  fetch(TAXAS_URL, { cache:'no-cache' }).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || !j.mercado || !j.mercado.bancos || typeof j.mercado.periodo !== 'string') return;
+    TAXAS = j; applyTaxas(); syncInputs(); update();
+  }).catch(() => {});
+}
+
 /* ---------- link com a simulação ---------- */
 function stateForLink(){ const d = {}; Object.keys(DEFAULTS).forEach(k => { if (JSON.stringify(S[k]) !== JSON.stringify(DEFAULTS[k])) d[k] = S[k]; }); d.inicio = S.inicio; return d; }
 const b64e = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -2011,7 +2028,7 @@ const b64d = str => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replac
 function linkURL(){ return location.href.split('#')[0] + '#s=' + b64e(JSON.stringify(stateForLink())); }
 function readLink(){
   const m = /^#s=([\w-]+)/.exec(location.hash || ''); if (!m) return false;
-  try { S = normState(JSON.parse(b64d(m[1]))); } catch(e){ return 'erro'; }
+  try { S = normState(JSON.parse(b64d(m[1]))); S.taxaAuto = false; } catch(e){ return 'erro'; }   // link preserva a taxa de quem enviou
   try { history.replaceState(null, '', location.href.split('#')[0]); } catch(e){}
   return true;
 }
@@ -2034,7 +2051,8 @@ const GLOSS = {
   obra:['Nas chaves ou durante a obra', 'Nas chaves: você contrata o banco na entrega, e o saldo a pagar é corrigido pelo INCC até lá. Durante a obra: o banco libera o dinheiro aos poucos e você paga juros de obra sobre o valor já liberado.'],
   incc:['INCC', 'Índice Nacional de Custo da Construção. Corrige o saldo devido enquanto o imóvel está em obra.'],
   rend:['Rendimento líquido', 'Quanto o investimento rende por ano depois do imposto de renda e das taxas, como um CDB ou o Tesouro Direto já descontado o IR.'],
-  itbi:['ITBI', 'Imposto municipal pago na transferência do imóvel. A alíquota depende da cidade.']
+  itbi:['ITBI', 'Imposto municipal pago na transferência do imóvel. A alíquota depende da cidade.'],
+  taxabc:['Taxas dos bancos', 'Média que cada banco cobrou, no mês, nos financiamentos imobiliários com juros de mercado e correção pela TR, segundo o Banco Central. É atualizada toda semana. A sua taxa pode ser diferente: depende do seu perfil, do relacionamento com o banco e do imóvel. Programas como o Minha Casa Minha Vida têm juros menores e não entram nessa média.']
 };
 function openPop(g, btn){
   const it = GLOSS[g]; if (!it) return;
@@ -2110,6 +2128,9 @@ function renderControls(){
   $('#taxaSuf').textContent = S.taxaUnit === 'aa' ? '% a.a.' : '% a.m.';
   const iM = taxaMensal(S.taxaAA / 100) * 100;
   $('#taxaHint').textContent = S.taxaUnit === 'aa' ? pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m. (taxa equivalente)' : pct(iM, 4) + ' a.m. ≈ ' + pct(S.taxaAA) + ' a.a. (taxa equivalente)';
+  $('#taxasNota').innerHTML = TAXAS
+    ? `Taxas médias praticadas pelos bancos em ${esc(TAXAS.mercado.periodo)}, juros de mercado + TR, segundo o Banco Central. Atualizadas toda semana. A sua taxa pode variar conforme perfil, relacionamento, renda e imóvel. ${Qb('taxabc')}`
+    : 'As taxas são referências e podem variar conforme perfil, relacionamento, renda, imóvel e condições do banco.';
   setSeg('#indiceSeg', S.indice); setSeg('#segModoSeg', S.segModo); setSeg('#plantaModoSeg', S.planta.modo);
   $('#trBox').hidden = !idxOn(); $('#trTag').hidden = !idxOn(); $('#trTag').textContent = idxNome();
   $('#idxLbl').textContent = idxNome() + ' anual estimada';
@@ -2206,6 +2227,7 @@ onNum('taxa', v => {
   S.taxaAA = S.taxaUnit === 'aa' ? v : taxaAnual(v / 100) * 100;
   const b = BANCOS.find(x => x.id === S.banco);
   if (!b || b.taxa == null || Math.abs(b.taxa - S.taxaAA) > 1e-9){ S.banco = 'custom'; S.customTaxa = S.taxaAA; }
+  S.taxaAuto = S.banco !== 'custom';
 });
 $('#taxa').addEventListener('blur', e => { e.target.value = S.taxaUnit === 'aa' ? smart(S.taxaAA, 2) : smart(taxaMensal(S.taxaAA / 100) * 100, 4); });
 $('#taxaUnit').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.taxaUnit = b.dataset.v; syncInputs(); update(); });
@@ -2213,6 +2235,7 @@ $('#bankChips').addEventListener('click', e => {
   const c = e.target.closest('[data-bank]'); if (!c) return;
   const b = BANCOS.find(x => x.id === c.dataset.bank);
   S.banco = b.id;
+  S.taxaAuto = b.taxa != null;
   if (b.taxa != null) S.taxaAA = b.taxa; else { S.taxaAA = +S.customTaxa || S.taxaAA; setTimeout(() => $('#taxa').focus(), 50); }
   syncInputs(); update();
 });
@@ -2335,7 +2358,7 @@ mount('cvPrazoP', () => specPrazo('p1')); mount('cvPrazoJ', () => specPrazo('jur
 mount('cvInvest', specInvest); mount('cvAluga', specAluga); mount('cvHoje', specHoje);
 const fromLink = readLink();
 if (fromLink === true) TAB = 'resumo';
-buildNav(); syncInputs(); applyTab(); run();
+buildNav(); syncInputs(); applyTab(); run(); loadTaxas();
 if (fromLink === true) toast('Simulação aberta pelo link');
 else if (fromLink === 'erro') toast('O link da simulação está incompleto.');
 })();

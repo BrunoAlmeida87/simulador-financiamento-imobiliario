@@ -15,7 +15,7 @@ Simulador de financiamento imobiliário brasileiro que responde a uma pergunta: 
 
 ## Regras que não podem ser quebradas
 
-1. **Arquivo único.** Todo o app fica em `index.html`; não separe CSS/JS e não adicione etapa de build. A única dependência externa é o `html2canvas` via CDN (cdnjs), carregado sob demanda só no botão "Salvar como imagem". Todo o resto precisa funcionar offline. **Exceção aprovada:** os arquivos do PWA (`manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-*.png`) e os testes (`tests/`, `.github/workflows/`). O `index.html` precisa continuar funcionando sozinho, sem eles.
+1. **Arquivo único.** Todo o app fica em `index.html`; não separe CSS/JS e não adicione etapa de build. A única dependência externa é o `html2canvas` via CDN (cdnjs), carregado sob demanda só no botão "Salvar como imagem". Todo o resto precisa funcionar offline. **Exceção aprovada:** os arquivos do PWA (`manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-*.png`), o `taxas.json` gerado automaticamente e a automação/testes (`tests/`, `.github/`). O `index.html` precisa continuar funcionando sozinho, sem eles.
 2. **Taxa mensal equivalente:** `i_m = (1 + i_a)^(1/12) − 1`. **Nunca** use `taxa anual / 12`.
 3. **Precisão interna cheia.** Só arredonde na exibição.
 4. **Não declare qual sistema (SAC/PRICE) é "melhor".** Apresente apenas os números.
@@ -49,13 +49,21 @@ Simulador de financiamento imobiliário brasileiro que responde a uma pergunta: 
 - Paleta validada para daltonismo (claro e escuro). Mantenha os papéis: amortização = azul, juros = laranja, entrada/extras = verde-água, correção (TR/IPCA/INCC) = amarelo, seguros = magenta, custos de compra/PRICE = violeta, "sem extras" = cinza tracejado. `TH` e as variáveis `--s-*` do CSS devem ficar sincronizados.
 - Gráficos registrados com `mount(id, specFn)`: `cvHero`, `cvEvo` (métrica em `evoMetric`), `cvAnual`, `cvPat` (quanto do imóvel é seu), `cvAcum` (cruzamento entre juros e amortização acumulados), `cvDonut`, `cvVS`, `cvPrazoP`, `cvPrazoJ`, `cvInvest`, `cvAluga`, `cvHoje`. Um `ResizeObserver` redesenha cada um quando a aba aparece.
 
+### Taxas dos bancos (automático)
+
+- `.github/workflows/taxas.yml` roda toda segunda-feira (e no push do script): `.github/scripts/atualizar-taxas.mjs` consulta a API Olinda do Banco Central (`TaxasJurosMensalPorMes`, ordenada por `anoMes`) e grava `taxas.json` com a **taxa média praticada por banco no mês mais recente**, pessoa física, pós-fixado referenciado em TR (o BC divulga sem a TR, igual ao campo de taxa do simulador). O commit é feito pelo `github-actions[bot]` só quando os números mudam, e o Pages republica sozinho.
+- `taxas.json` tem `mercado` (usado pelo simulador) e `reguladas` (só registro: a média da Caixa e do BB inclui MCMV/FGTS e subestimaria a parcela).
+- No app: `TAXAS`, `applyTaxas()`, `taxaOficial()`. `S.taxaAuto` = a taxa segue o banco escolhido; vira `false` quando o usuário digita uma taxa, e ao abrir um link (preserva a taxa de quem enviou). Em `file://` não há busca: valem os valores do código.
+- Bancos casados por CNPJ raiz (Caixa 00360305, BB 00000000, Itaú 60701190, Bradesco 60746948, Santander 90400888) ou pelo nome. Se a API falhar, o workflow falha e `taxas.json` não muda.
+- Logs do Actions não são legíveis pela sessão em nuvem; para depurar, rode o script com `TAXAS_DIAG=1`, que grava `_diag` dentro do `taxas.json`.
+
 ### Relatório
 
 `buildReport()` gera um HTML A4 independente (tema claro, gráficos em PNG embutidos). O modal oferece Imprimir/PDF, Baixar (.html) e Abrir em nova aba. Ao adicionar uma seção na tela, avalie incluí-la no relatório.
 
 ### Configuração (topo do 2º script) — os pontos editados com mais frequência
 
-- `BANCOS` — presets `{ id, nome, taxa }` em % a.a. efetiva. `taxa: null` corresponde a "Personalizado".
+- `BANCOS` — presets `{ id, nome, taxa }` em % a.a. efetiva. `taxa: null` corresponde a "Personalizado". Os valores no código são só a **reserva offline**: no site publicado, `loadTaxas()` lê `taxas.json` e substitui pelas taxas médias praticadas (veja "Taxas dos bancos" abaixo).
 - `FGTS_TETO` (R$ 2,25 mi, Conselho Curador do FGTS, nov/2025), `FGTS_INTERVALO` (24 meses entre usos), `FGTS_REND_AA` (3% a.a., sem a TR). **Confira periodicamente.**
 - `PRAZOS_ANOS` (chips 10–35 anos), `PRAZOS_COMPARADOR` (240/300/360/420 meses), `ENTRADAS_EXTRA` (+50k/+100k/+200k), `MAX_CENARIOS` (4).
 - `DEFAULTS` — dados iniciais de demonstração: imóvel R$ 1.600.000, entrada R$ 400.000, 10,99% a.a., 360 meses, SAC, comprometimento de renda de 30%, sem correção, seguros 0 (modo percentual), LTV máximo de 80%, ITBI de 3%, renda 0 (opcional), FGTS e planta desligados, e `plan` com os valores iniciais da aba Planejar.
@@ -115,7 +123,8 @@ Testes automáticos (rodam no GitHub Actions a cada push, em `.github/workflows/
 ```bash
 node tests/engine.test.cjs                       # motor: valores de referência, fechamento, MIP %
 NODE_PATH=$(npm root -g) node tests/ui.test.cjs  # interface: abas 375px claro/escuro, FGTS, planta, IPCA, CET,
-                                                 # Planejar, link, importação, relatório, desktop, erros de JS
+                                                 # Planejar, link, importação, relatório, taxas.json via HTTP,
+                                                 # desktop, erros de JS
 ```
 
 Teste rápido em Node (extrai o motor do HTML):
@@ -134,7 +143,7 @@ node -e "const h=require('fs').readFileSync('index.html','utf8');eval(h.split('/
 **Planejar:** meta de quitação, amortizar ou investir, comprar ou alugar, valores de hoje, portabilidade (`renderPlan`, `applyMeta`).
 **Tabela:** completa, por ano, 12 primeiras e 12 últimas (`renderTable`, só renderiza com a aba ativa) · exportação CSV no padrão brasileiro (`exportCSV`).
 **Relatório:** `openReport` → `buildReport` (inclui CET, FGTS, planta e a seção Planejamento).
-**PWA:** `manifest.webmanifest` + `sw.js` (rede primeiro para a página, cache para o resto; registrado só em http/https). Ao mudar arquivos em cache, aumente `CACHE` em `sw.js`. Botão "Instalar como app" aparece com `beforeinstallprompt`.
+**PWA:** `manifest.webmanifest` + `sw.js` (rede primeiro para a página e o `taxas.json`, cache para o resto; registrado só em http/https). Ao mudar arquivos em cache, aumente `CACHE` em `sw.js`. Botão "Instalar como app" aparece com `beforeinstallprompt`.
 
 ## Ao modificar
 

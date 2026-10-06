@@ -1,7 +1,8 @@
 // Atualiza taxas.json com as taxas médias praticadas pelos bancos no financiamento imobiliário,
 // a partir dos dados abertos do Banco Central (API Olinda, "Taxas de juros de operações de crédito").
 // Nas modalidades pós-fixadas, o BC divulga a taxa SEM o indexador (TR), igual ao campo de taxa do simulador.
-// Usa a série semanal (média de 5 dias úteis) e, se não houver, a mensal.
+// Série mensal (a semanal do BC não inclui financiamento imobiliário).
+// O simulador usa "mercado"; "reguladas" fica registrado, mas inclui programas subsidiados (MCMV/FGTS).
 // Uso: node .github/scripts/atualizar-taxas.mjs   (Node 20+, sem dependências)
 import fs from 'node:fs';
 
@@ -58,7 +59,7 @@ async function serie(recurso, tipo){
   const mods = [...new Set(linhas.map(r => r[K.mod]))];
   log(tipo, 'modalidades', mods);
   const res = {};
-  for (const [id, re] of Object.entries({ sfh:[/regulad/i, /\bTR\b/], sfi:[/mercado/i, /\bTR\b/] })){
+  for (const [id, re] of Object.entries({ mercado:[/mercado/i, /\bTR\b/], reguladas:[/regulad/i, /\bTR\b/] })){
     const mod = mods.find(m => re.every(x => x.test(m))); if (!mod) continue;
     const doMod = linhas.filter(r => r[K.mod] === mod);
     const pers = [...new Set(doMod.map(r => String(r[K.per])))].sort((a, b) => periodo(b).ord - periodo(a).ord);
@@ -83,21 +84,21 @@ async function serie(recurso, tipo){
 
 async function main(){
   const sets = [];
-  for (const [rec, tipo] of [['TaxasJurosDiariaPorInicioPeriodo', 'semanal'], ['TaxasJurosMensalPorMes', 'mensal']]){
+  for (const [rec, tipo] of [['TaxasJurosMensalPorMes', 'mensal']]){
     try { sets.push(await serie(rec, tipo)); } catch(e){ log(tipo, 'falhou', e.message); }
   }
   const out = {
     fonte:'Banco Central do Brasil — taxas médias de juros por instituição financeira',
     url:'https://www.bcb.gov.br/estatisticas/reporttxjuros',
-    nota:'Taxa média praticada pelo banco no período, sem a TR (pós-fixado referenciado em TR), pessoa física.',
+    nota:'Taxa média praticada pelo banco no mês, sem a TR (pós-fixado referenciado em TR), pessoa física. As taxas reguladas incluem programas subsidiados (MCMV/FGTS).',
     gerado:new Date().toISOString().slice(0, 10)
   };
-  for (const id of ['sfh', 'sfi']){
+  for (const id of ['mercado', 'reguladas']){
     const cands = sets.map(s => s[id]).filter(Boolean).sort((a, b) => b.ord - a.ord);
     if (cands.length){ const { ord, ...x } = cands[0]; out[id] = x; }
   }
   if (process.env.TAXAS_DIAG) out._diag = diag;
-  if (!out.sfh && !out.sfi){ console.error('ERRO: nenhuma taxa encontrada; taxas.json não foi alterado'); if (process.env.TAXAS_DIAG) fs.writeFileSync('taxas.json', JSON.stringify(out, null, 2) + '\n'); process.exit(process.env.TAXAS_DIAG ? 0 : 1); }
+  if (!out.mercado){ console.error('ERRO: nenhuma taxa encontrada; taxas.json não foi alterado'); if (process.env.TAXAS_DIAG) fs.writeFileSync('taxas.json', JSON.stringify(out, null, 2) + '\n'); process.exit(process.env.TAXAS_DIAG ? 0 : 1); }
   fs.writeFileSync('taxas.json', JSON.stringify(out, null, 2) + '\n');
   console.log(JSON.stringify(out, null, 2));
 }
