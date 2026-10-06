@@ -1,0 +1,28 @@
+{
+  "fonte": "Banco Central do Brasil — taxas médias de juros por instituição financeira",
+  "url": "https://www.bcb.gov.br/estatisticas/reporttxjuros",
+  "nota": "Taxa média praticada pelo banco no mês, sem a TR (pós-fixado referenciado em TR), pessoa física.",
+  "gerado": "2026-10-06",
+  "sfh": {
+    "modalidade": "Financiamento imobiliário com taxas reguladas - Pós-fixado referenciado em TR",
+    "mes": "Set-2025",
+    "bancos": {
+      "caixa": 7.53,
+      "bb": 8.77,
+      "itau": 11.61,
+      "bradesco": 11.72,
+      "santander": 12.38
+    }
+  },
+  "sfi": {
+    "modalidade": "Financiamento imobiliário com taxas de mercado - Pós-fixado referenciado em TR",
+    "mes": "Set-2025",
+    "bancos": {
+      "caixa": 11.46,
+      "bb": 15.3,
+      "itau": 12.45,
+      "bradesco": 13.21,
+      "santander": 13.32
+    }
+  }
+}
