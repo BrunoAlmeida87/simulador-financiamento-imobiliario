@@ -1,28 +1,44 @@
 {
   "fonte": "Banco Central do Brasil — taxas médias de juros por instituição financeira",
   "url": "https://www.bcb.gov.br/estatisticas/reporttxjuros",
-  "nota": "Taxa média praticada pelo banco no mês, sem a TR (pós-fixado referenciado em TR), pessoa física.",
+  "nota": "Taxa média praticada pelo banco no período, sem a TR (pós-fixado referenciado em TR), pessoa física.",
   "gerado": "2026-10-06",
   "sfh": {
     "modalidade": "Financiamento imobiliário com taxas reguladas - Pós-fixado referenciado em TR",
-    "mes": "Set-2025",
+    "serie": "mensal",
+    "periodo": "jul/2026",
     "bancos": {
-      "caixa": 7.53,
-      "bb": 8.77,
-      "itau": 11.61,
-      "bradesco": 11.72,
-      "santander": 12.38
+      "caixa": 8.09,
+      "bb": 10.24,
+      "itau": 11.86,
+      "bradesco": 11.76,
+      "santander": 11.82
     }
   },
   "sfi": {
     "modalidade": "Financiamento imobiliário com taxas de mercado - Pós-fixado referenciado em TR",
-    "mes": "Set-2025",
+    "serie": "mensal",
+    "periodo": "jul/2026",
     "bancos": {
-      "caixa": 11.46,
-      "bb": 15.3,
-      "itau": 12.45,
-      "bradesco": 13.21,
-      "santander": 13.32
+      "caixa": 12.12,
+      "bb": 14.42,
+      "itau": 12.01,
+      "bradesco": 12.29,
+      "santander": 12.29
     }
-  }
+  },
+  "_diag": [
+    "semanal campos InicioPeriodo,FimPeriodo,codigoSegmento,Segmento,codigoModalidade,Modalidade,Posicao,InstituicaoFinanceira,TaxaJurosAoMes,TaxaJurosAoAno,cnpj8 exemplo 2026-09-15 null",
+    "semanal consulta falhou HTTP 500 /*{\n  \"codigo\" : 500,\n  \"mensagem\" : \"Erro desconhecido\"\n}*/",
+    "semanal consulta falhou HTTP 400 /*{\n  \"codigo\" : 400,\n  \"mensagem\" : \"The property 'substringof', used in a query expression, is not defined in type 'br.gov.bcb.olinda.servico.taxaJuros.TaxaJurosDiaria'.\"\n}*/",
+    "semanal linhas 0",
+    "semanal modalidades []",
+    "mensal campos Mes,Modalidade,Posicao,InstituicaoFinanceira,TaxaJurosAoMes,TaxaJurosAoAno,cnpj8,anoMes exemplo Ago-2026 Financiamento imobiliário com taxas de mercado - Prefixado",
+    "mensal linhas 4000",
+    "mensal modalidades [\"Financiamento imobiliário com taxas de mercado - Prefixado\",\"Financiamento imobiliário com taxas de mercado - Pós-fixado referenciado em TR\",\"Financiamento imobiliário com taxas de mercado - Pós-fixado referenciado em IPCA\",\"Financiamento imobiliário com taxas reguladas - Prefixado\",\"Financiamento imobiliário com taxas reguladas - Pós-fixado referenciado em TR\",\"Financiamento ",
+    "mensal sfh períodos mais recentes [\"Jul-2026\",\"Jun-2026\",\"Mai-2026\",\"Mar-2026\"]",
+    "mensal sfh Jul-2026 {\"caixa\":8.09,\"bb\":10.24,\"itau\":11.86,\"bradesco\":11.76,\"santander\":11.82}",
+    "mensal sfi períodos mais recentes [\"Jul-2026\",\"Jun-2026\",\"Mai-2026\",\"Mar-2026\"]",
+    "mensal sfi Jul-2026 {\"caixa\":12.12,\"bb\":14.42,\"itau\":12.01,\"bradesco\":12.29,\"santander\":12.29}"
+  ]
 }
