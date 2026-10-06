@@ -27,6 +27,7 @@ Simulador mobile first em um único arquivo HTML: SAC x PRICE, TR, seguros, amor
 - Glossário com "?" nos termos técnicos
 - Instalável como app (PWA) e uso offline
 - Cartão para compartilhar (imagem), compartilhar e copiar resumo
+- Layout que se adapta a celular, tablet e computador (testado de 320px a 1920px); tabelas viram cartões ou lista em telas estreitas
 - Modo claro e escuro automáticos
 
 ## Uso

@@ -8,7 +8,7 @@ Simulador de financiamento imobiliário brasileiro que responde a uma pergunta: 
 
 - **Um único arquivo `index.html`** com todo o HTML, CSS e JavaScript. Não tem backend, build nem dependências locais.
 - Para usar, basta abrir o arquivo no navegador. Também é publicado via GitHub Pages em https://brunoalmeida87.github.io/simulador-financiamento-imobiliario/
-- **Mobile first**: a tela de referência tem 375px de largura. A partir de 1024px o layout vira 2 colunas (entradas fixas à esquerda, resultados à direita).
+- **Mobile first, adaptável a qualquer tela** (testado de 320px a 1920px): celular e tablet usam uma aba por vez com barra inferior (flutuante a partir de 600px); a partir de 1024px o layout vira 2 colunas (Dados fixo à esquerda, resultados à direita).
 - Modo claro e escuro automáticos, via `prefers-color-scheme`.
 - Interface, textos e formatação em **pt-BR** (`R$ 1.234.567,89`, `10,99%`).
 - Autor/usuário: Bruno (Rio de Janeiro). Ele se comunica em português e prefere respostas diretas, tecnicamente precisas e com tabelas para números.
@@ -41,6 +41,16 @@ Simulador de financiamento imobiliário brasileiro que responde a uma pergunta: 
 - Identidade: azul-marinho como tinta (`--ink`/`--primary`), latão (`--brass`) só para destaques (pontos-chave da curva, número do cartão), fundo papel azulado. Fonte **Schibsted Grotesk** (Google Fonts) com números tabulares; sem internet, usa a fonte do sistema.
 - **Navegação:** no celular (< 1024px) há uma aba visível por vez e barra inferior `.bnav` (Dados, Resumo, Gráficos, Comparar, Planejar, Tabela). No desktop, Dados fica fixo à esquerda e as outras abas aparecem no topo (`.tabs`). A aba atual é salva em `sfi_tab_v1`. Use `setTab(id)` e `applyTab()`.
 - O destaque principal é o número da 1ª parcela (`moneyHTML`) com a curva de parcelas (`cvHero`). Os pontos em latão marcam 5 anos, meio e última, e batem com os itens marcados em `#heroKeys`.
+
+### Layout responsivo (regras para não cortar nada)
+
+- **Container queries, não media queries, para o conteúdo.** `.mainc` é o container `main`; painéis, cartões e indicadores (`.panel`, `.hero`, `.tile`, `.stat`, `.ro`, `.res`, `.card-share`, `.vs>div`, `.pcard`, `.ccard`) também são containers. Grades (`.grid2`, `.tiles`, `.keys`, `.charts2`, `.donut-wrap`, `.share-wrap`) mudam pela largura real da área, não da tela. Fontes de números usam `cqi` com `clamp()`. Media queries só para a moldura (cabeçalho, barra inferior, sidebar).
+- **Toda coluna de grade é `minmax(0,1fr)`**: sem isso, um valor com `nowrap` empurra a grade e estoura a página.
+- **Tabelas:** valores sem "R$" nas células (use `nm()` e um `<p class="unit">Valores em R$</p>`). Tabelas largas têm duas versões: `.only-wide` (tabela, container ≥ 760px) e `.only-narrow` (cartões `.pcard`/`.ccard`). A tabela de amortização escolhe sozinha entre tabela e lista (`.alist`) pela largura necessária (`cols × 104px`), em `renderTable`. Se uma tabela ainda precisar rolar, `markScroll()` mostra sombra e o aviso "Deslize a tabela".
+- `brl()`/`brlShort()` usam espaço inseparável: "R$" nunca se separa do número.
+- **Relatório:** tabelas sem "R$", fonte 11px; tem de caber em A4 (718px). Na tela, as tabelas largas rolam dentro de `.wide`.
+- **Desempenho:** `run()` recalcula `R` e redesenha só a aba visível (`RENDER[visTab()]`); as outras são desenhadas ao abrir (`applyTab` → `renderVisible`). `R.prazos` e `R.plan` são calculados uma vez por ciclo. Atualizações da aba Dados (selos, hints) ficam em `renderControls`, que roda sempre.
+- **Gráficos no toque:** o valor do tooltip fica visível até tocar fora do gráfico (`hideTip` no `pointerdown` do documento); no mouse, some ao sair.
 
 ### Gráficos (canvas puro, sem biblioteca)
 
@@ -124,7 +134,8 @@ Testes automáticos (rodam no GitHub Actions a cada push, em `.github/workflows/
 node tests/engine.test.cjs                       # motor: valores de referência, fechamento, MIP %
 NODE_PATH=$(npm root -g) node tests/ui.test.cjs  # interface: abas 375px claro/escuro, FGTS, planta, IPCA, CET,
                                                  # Planejar, link, importação, relatório, taxas.json via HTTP,
-                                                 # desktop, erros de JS
+                                                 # layout em 5 telas × 6 abas × 2 cenários (nada vazando, cortado
+                                                 # ou rolando de lado), relatório cabendo em A4, erros de JS
 ```
 
 Teste rápido em Node (extrai o motor do HTML):
@@ -148,8 +159,8 @@ node -e "const h=require('fs').readFileSync('index.html','utf8');eval(h.split('/
 ## Ao modificar
 
 - Antes de entregar, rode `tests/engine.test.cjs` e `tests/ui.test.cjs`. Ao criar recurso novo, acrescente uma verificação no teste de interface.
-- Teste em viewport de 375px nos modos claro e escuro, em **todas as abas** (Playwright está disponível nas sessões em nuvem). Não pode haver rolagem horizontal: `document.documentElement.scrollWidth` deve ser 375. Teste também o desktop (1440px) e o relatório.
-- Valores monetários longos não podem quebrar linha nem ser cortados em cards estreitos: use `white-space:nowrap` com `clamp()` no tamanho da fonte.
+- O teste de interface já audita o layout em 320, 375, 768, 1024 e 1440px. Se ele acusar algo, corrija com container queries e `minmax(0,1fr)`, nunca escondendo com `overflow:hidden`. Confira também o visual por screenshot (claro e escuro) e o relatório em PDF.
+- Valores monetários longos não podem quebrar linha nem ser cortados em cards estreitos: use `white-space:nowrap` com `clamp(…, Ncqi, …)` no tamanho da fonte, e um container no cartão.
 - Copy em pt-BR, frases curtas, sentence case; sem rótulos em caixa alta.
 - Novas cores devem ser tokens em `:root`, com equivalente no bloco dark.
 - Formate valores com `brl()`, `pct()`, `num()` e `smart()`, e leia entradas com `parseBR()` (aceita `1.600.000`, `1600000`, `10,99`).

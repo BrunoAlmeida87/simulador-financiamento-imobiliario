@@ -8,6 +8,61 @@ let ok = 0, fail = 0;
 const check = (nome, cond, info) => { if (cond){ ok++; console.log('  ✓ ' + nome); } else { fail++; console.log('  ✗ ' + nome + (info != null ? '  → ' + info : '')); } };
 const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
+
+// ---------- Layout responsivo: nada pode vazar, ser cortado ou exigir rolagem lateral ----------
+const AUDIT = () => {
+  const vis = e => { const r = e.getBoundingClientRect(); const cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && !e.closest('[hidden]') && e.offsetParent !== null; };
+  const out = [];
+  if (document.documentElement.scrollWidth > innerWidth) out.push('página +' + (document.documentElement.scrollWidth - innerWidth) + 'px');
+  for (const c of [...document.querySelectorAll('.panel,.hero,.grp,.tile,.res,.stat,.opt,.ro,.vs>div,.card-share,.keys>div,.pcard,.ccard')].filter(vis)){
+    const cr = c.getBoundingClientRect();
+    for (const e of c.querySelectorAll('*')){
+      if (!vis(e) || e.closest('.tbl-wrap') || e.closest('.tip') || e.closest('.chart')) continue;
+      const r = e.getBoundingClientRect();
+      if (r.right > cr.right + 1.5 || r.left < cr.left - 1.5){ out.push('fora do card: ' + (e.innerText || e.tagName).trim().slice(0, 30)); break; }
+    }
+  }
+  for (const e of document.querySelectorAll('body *')){
+    if (!vis(e) || e.closest('.tbl-wrap') || e.closest('.brand') || e.closest('svg') || ['CANVAS','INPUT','SELECT'].includes(e.tagName)) continue;
+    const cs = getComputedStyle(e);
+    if (/(hidden|clip)/.test(cs.overflowX) && e.scrollWidth > e.clientWidth + 1 && !/\b(cbar|keys|bar)\b/.test(e.className)) out.push('cortado: ' + (e.innerText || '').trim().slice(0, 30));
+  }
+  for (const w of document.querySelectorAll('.tbl-wrap')) if (vis(w) && w.scrollWidth > w.clientWidth + 1) out.push('tabela rola: ' + (w.querySelector('table') || {}).id);
+  const ov = (a, b) => { const r1 = a.getBoundingClientRect(), r2 = b.getBoundingClientRect(); return r1.width > 0 && r2.width > 0 && r1.left < r2.right - 1 && r2.left < r1.right - 1 && r1.top < r2.bottom - 1 && r2.top < r1.bottom - 1; };
+  const bd = document.querySelector('.brand div');
+  if (bd && getComputedStyle(bd).display !== 'none' && ov(bd, document.querySelector('#live'))) out.push('cabeçalho sobreposto');
+  const sp = [...document.querySelectorAll('#bnav button span')];
+  for (let i = 0; i + 1 < sp.length; i++) if (ov(sp[i], sp[i + 1])) out.push('barra inferior com rótulos encostados');
+  return out;
+};
+const COMPLETO = { sistema:'COMP', indice:'ipca', segModo:'pct', mipPct:0.02, dfiPct:0.007, tarifa:25, renda:45000, avaliacao:3500, registro:12000,
+  fgts:{ on:true, saldo:100000, mensal:1500, entrada:false, amortizar:true }, planta:{ on:true, meses:24, modo:'obra', incc:5 },
+  pontuais:[{ mes:12, valor:100000 }], rec:{ valor:2000, cada:1, inicio:1, qtd:0 } };
+async function auditarLayout(abrir){
+  const VPS = [[320,640,1],[375,812,1],[768,1024,1],[1024,768,0],[1440,900,0]], problemas = [];
+  for (const [w, h, mob] of VPS){
+    const { ctx, pg } = await abrir({ viewport:{ width:w, height:h }, isMobile:!!mob, hasTouch:!!mob, deviceScaleFactor:1 });
+    for (const estado of ['padrão', 'completo']){
+      if (estado === 'completo'){
+        await pg.evaluate(st => { localStorage.setItem('sfi_state_v1', JSON.stringify(st)); localStorage.setItem('sfi_cenarios_v1', JSON.stringify([1,2,3].map(i => ({ id:i, letra:'ABC'[i - 1], state:Object.assign({}, st, { entrada:300000 + i * 100000 }), res:{ valor:1600000, entrada:300000 + i * 100000, entradaPct:25, fin:1200000, banco:'Caixa', taxa:10.99, prazo:360, sistema:'SAC', p1:13805.76, last:3362.42, renda:46019.19, juros:1890272.62, total:3090272.62, n:360, extras:0, cet:10.99, indice:'IPCA' } })))); }, COMPLETO);
+        await pg.reload(); await pg.waitForTimeout(400);
+      }
+      for (const t of ['resumo', 'graficos', 'comparar', 'planejar', 'tabela', 'dados']){
+        if (!mob && t === 'dados') continue;
+        await pg.evaluate(sel => { document.querySelector(sel).click(); scrollTo(0, 0); }, mob ? `#bnav [data-tab=${t}]` : `#topTabs [data-tab=${t}]`);
+        await pg.waitForTimeout(200);
+        if (t === 'comparar' && estado === 'completo') await pg.evaluate(() => { const b = document.querySelector('#btnCompCen'); if (b.innerText.includes('Comparar')) b.click(); });
+        if (t === 'dados') await pg.evaluate(() => document.querySelectorAll('details.grp').forEach(d => d.open = true));
+        await pg.waitForTimeout(120);
+        const p = await pg.evaluate(AUDIT);
+        if (p.length) problemas.push(`${w}px ${estado} ${t}: ${[...new Set(p)].slice(0, 3).join('; ')}`);
+      }
+    }
+    await ctx.close();
+  }
+  return problemas;
+}
+
 (async () => {
   const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath:process.env.CHROMIUM_PATH } : {});
   const erros = [];
@@ -19,7 +74,7 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g
     await pg.goto(url || URL); await pg.waitForTimeout(500);
     return { ctx, pg };
   }
-  const txt = (pg, sel) => pg.innerText(sel);
+  const txt = async (pg, sel) => (await pg.innerText(sel)).replace(/\u00a0/g, ' ');
   const largura = async (pg, onde) => { const sw = await pg.evaluate(() => document.documentElement.scrollWidth); check('sem rolagem lateral: ' + onde, sw === 375, sw); };
   const tabs = ['resumo', 'graficos', 'comparar', 'planejar', 'tabela', 'dados'];
 
@@ -118,6 +173,20 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g
   await t.pg.fill('#taxa', '9,5'); await t.pg.waitForTimeout(150);
   check('taxa digitada não é sobrescrita', (await txt(t.pg, '#liveVal')) !== esperado);
   await t.ctx.close(); srv.close();
+
+  // Layout em 5 tamanhos de tela, 6 abas, dados simples e completos
+  const prob = await auditarLayout(abrir);
+  check('layout sem vazamentos, cortes ou tabelas que exigem rolagem (5 telas × 6 abas × 2 cenários)', prob.length === 0, prob.slice(0, 6).join(' | '));
+
+  // Relatório impresso em A4: nenhuma tabela ou gráfico passa da largura da página
+  { const { ctx, pg } = await abrir({ viewport:{ width:1280, height:900 }, isMobile:false, hasTouch:false });
+    await pg.evaluate(st => localStorage.setItem('sfi_state_v1', JSON.stringify(st)), COMPLETO); await pg.reload(); await pg.waitForTimeout(400);
+    await pg.click('#btnRelTop'); await pg.waitForTimeout(1200);
+    const html = await pg.evaluate(() => document.getElementById('relFrame').srcdoc);
+    const r = await ctx.newPage(); await r.setContent(html); await r.emulateMedia({ media:'print' }); await r.setViewportSize({ width:718, height:1000 });
+    const fora = await r.evaluate(() => [...document.querySelectorAll('.wide,table,img,section')].filter(e => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > document.documentElement.clientWidth + 1).length);
+    check('relatório cabe na largura do A4 (sem tabelas cortadas no PDF)', fora === 0, fora);
+    await ctx.close(); }
 
   // Desktop
   const d = await abrir({ viewport:{ width:1440, height:900 }, isMobile:false, hasTouch:false });
