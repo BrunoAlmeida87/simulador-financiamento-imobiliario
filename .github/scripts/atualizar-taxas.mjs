@@ -41,13 +41,15 @@ async function serie(recurso, tipo){
   if (!ex) throw new Error('sem dados');
   const K = {
     per: tipo === 'semanal' ? (findKey(ex, /inicio/i) || findKey(ex, /periodo/i)) : (findKey(ex, /^mes$/i) || findKey(ex, /anomes/i) || findKey(ex, /mes/i)),
-    fim: findKey(ex, /fim/i), mod: findKey(ex, /modalidade/i), inst: findKey(ex, /institui/i),
-    aa: findKey(ex, /taxa/i, /ano/i), cnpj: findKey(ex, /cnpj/i), seg: findKey(ex, /segmento/i)
+    fim: findKey(ex, /fim/i), mod: findKey(ex, /^modalidade$/i) || findKey(ex, /modalidade/i), inst: findKey(ex, /institui/i),
+    aa: findKey(ex, /taxa/i, /ano/i), cnpj: findKey(ex, /cnpj/i), seg: findKey(ex, /^segmento$/i) || findKey(ex, /segmento/i)
   };
+  // ordenação no servidor: "Mes" vem como texto ("Ago-2026"); "anoMes" ordena corretamente
+  const ordem = tipo === 'mensal' ? (findKey(ex, /^anomes$/i) || K.per) : K.per;
   log(tipo, 'campos', Object.keys(ex).join(','), 'exemplo', ex[K.per], ex[K.mod]);
   let linhas = [];
-  for (const q of [`$filter=contains(${K.mod},'imobili')&$orderby=${K.per} desc&$top=4000`,
-                   `$filter=substringof('imobili',${K.mod})&$orderby=${K.per} desc&$top=4000`]){
+  for (const q of [`$filter=contains(${K.mod},'imobili')&$orderby=${ordem} desc&$top=4000`,
+                   `$filter=contains(${K.mod},'imobili')&$top=20000`]){
     try { linhas = (await get(recurso, q)).filter(r => /imobili/i.test(r[K.mod])); if (linhas.length) break; }
     catch(e){ log(tipo, 'consulta falhou', e.message); }
   }
