@@ -20,6 +20,8 @@ jobs:
           node-version: 20
       - name: Consultar o Banco Central
         run: node .github/scripts/atualizar-taxas.mjs
+        env:
+          TAXAS_DIAG: ${{ github.event_name == 'push' && '1' || '' }}
       - name: Salvar se mudou
         env:
           GH_TOKEN: ${{ github.token }}
