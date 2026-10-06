@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1e33">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Simulador">
 <meta name="description" content="Simulador de financiamento imobiliário: SAC x PRICE, TR, amortizações extras, gráficos e relatório.">
 <title>Simulador Imobiliário</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -103,10 +108,11 @@ small{font-size:.8em;color:var(--muted);font-weight:500}
 .tab.on{display:grid;gap:14px;align-content:start;animation:tabIn .22s ease}
 @keyframes tabIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .tabs{display:none}
-.bnav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border-top:1px solid var(--line);
   padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px -16px rgba(15,30,51,.3)}
 .bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;min-height:52px;color:var(--muted);font-size:11px;font-weight:600}
 .bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;padding:2px 10px;box-sizing:content-box;border-radius:999px;transition:background .15s}
+@media (max-width:400px){.bnav svg{padding:2px 6px}.bnav button{font-size:10.5px}}
 .bnav button.on{color:var(--ink)}
 .bnav button.on svg{background:var(--sel-soft);stroke:var(--sel)}
 
@@ -164,7 +170,7 @@ input[type=month]{color-scheme:inherit}
 .readouts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
 .ro{background:var(--surface-2);border-radius:var(--r-md);padding:10px 12px}
 .ro span{display:block;font-size:12px;color:var(--muted);font-weight:600}
-.ro b{font-size:16px;font-weight:800}
+.ro b{font-size:clamp(14px,4vw,16px);font-weight:800;white-space:nowrap}
 .ro.main{background:var(--sel-soft)}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
 .chip{border:1.5px solid var(--line);background:var(--surface-2);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;min-height:42px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
@@ -174,7 +180,7 @@ input[type=month]{color-scheme:inherit}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface-3);border-radius:var(--r-md);padding:3px;gap:3px}
 .seg button{border:0;background:transparent;padding:8px 6px;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted);min-height:40px}
 .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(15,30,51,.16)}
-.seg.mini{border-radius:9px;padding:2px}.seg.mini button{min-height:30px;padding:3px 10px;font-size:13px;border-radius:7px}
+.seg.mini{border-radius:9px;padding:2px}.seg.mini button{white-space:nowrap}.seg.mini button{min-height:30px;padding:3px 10px;font-size:13px;border-radius:7px}
 .alert{border-radius:var(--r-md);padding:12px 14px;font-size:14px;line-height:1.4;margin-top:12px}
 .alert.warn{background:var(--warn-soft);color:var(--warn)}
 .alert.danger{background:var(--bad-soft);color:var(--bad)}
@@ -212,7 +218,7 @@ input[type=month]{color-scheme:inherit}
 
 /* ============ TILES ============ */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-@media (min-width:760px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:760px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;min-width:0}
 .tile span{display:block;font-size:12.5px;color:var(--muted);font-weight:600}
 .tile b{display:block;font-size:clamp(15px,4vw,21px);font-weight:800;letter-spacing:-.02em;margin-top:4px;white-space:nowrap}
@@ -226,7 +232,7 @@ input[type=month]{color-scheme:inherit}
 .kv li b{font-weight:700;text-align:right;white-space:nowrap}
 .kv li.tot{border-top:2px solid var(--line);margin-top:2px}
 .kv li.tot b{font-size:16.5px;font-weight:800}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .stat{background:var(--surface-2);border-radius:var(--r-md);padding:12px}
 .stat span{display:block;font-size:12px;color:var(--muted);font-weight:600}
 .stat b{display:block;font-size:clamp(15px,4.1vw,18px);font-weight:800;margin-top:2px;white-space:nowrap}
@@ -333,6 +339,28 @@ tr.tot td{font-weight:800;border-top:2px solid var(--line)}
 .modal-bar h2{font-size:16px;margin-right:auto}
 .modal iframe{flex:1;border:0;width:100%;background:#eef1f5}
 
+/* ============ NOVOS ITENS ============ */
+.q{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-size:12px;font-weight:800;padding:0;margin-left:4px;vertical-align:1px;line-height:1}
+.q:hover{border-color:var(--ink-2);color:var(--ink)}
+.pop{position:fixed;z-index:96;left:12px;right:12px;bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom));max-width:440px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 16px 14px;box-shadow:0 20px 50px rgba(8,14,24,.3)}
+.pop b{display:block;font-size:16px;margin-bottom:4px}
+.pop p{margin:0 0 12px;color:var(--ink-2);font-size:14.5px;line-height:1.5}
+@media (min-width:1024px){.pop{bottom:28px}}
+.gloss{margin:0 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 16px;color:var(--ink-2)}
+.gloss summary{cursor:pointer;font-weight:700;color:var(--ink);font-size:15px}
+.gloss dl{margin:10px 0 0;display:grid;gap:10px}
+.gloss dt{font-weight:700;color:var(--ink)}
+.gloss dd{margin:0;font-size:13.5px}
+.install{margin:0 0 12px}
+.pin{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:4px 10px;margin-bottom:6px;align-items:end}
+.pin .field{margin-bottom:8px}
+.res{background:var(--surface-2);border-radius:var(--r-md);padding:14px;margin-bottom:10px}
+.res .big{font-size:clamp(21px,6vw,28px);font-weight:800;letter-spacing:-.025em;line-height:1.2;overflow-wrap:anywhere}
+.res .big small{font-size:.55em;color:var(--muted);font-weight:700;letter-spacing:0}
+.tab>*{min-width:0}
+.res p{margin:4px 0 0;color:var(--ink-2);font-size:14px}
+.res .btn{margin-top:12px}
+.vs-cet{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 12px}
 footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-height:1.5;max-width:900px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 22px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:all .25s;z-index:95;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -379,7 +407,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
     </div>
     <div class="readouts">
       <div class="ro main"><span>Valor financiado</span><b id="finOut">—</b></div>
-      <div class="ro"><span>Percentual financiado</span><b id="ltvOut">—</b></div>
+      <div class="ro"><span>Percentual financiado <button class="q" type="button" data-g="ltv" aria-label="O que é isso?">?</button></span><b id="ltvOut">—</b></div>
     </div>
     <div id="ltvAlert" class="alert warn" hidden></div>
   </section>
@@ -398,7 +426,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
 
   <section class="grp">
     <h2>Sistema e prazo</h2>
-    <div class="field"><span class="lbl">Sistema de amortização</span>
+    <div class="field"><span class="lbl">Sistema de amortização <button class="q" type="button" data-g="sac" aria-label="O que é isso?">?</button></span>
       <div class="seg" id="sistemaSeg"><button type="button" data-v="SAC">SAC</button><button type="button" data-v="PRICE">PRICE</button><button type="button" data-v="COMP">Comparar</button></div></div>
     <div class="field"><span class="lbl">Prazo</span>
       <div class="chips" id="prazoChips" style="margin-bottom:8px"></div>
@@ -409,7 +437,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
       <input type="range" id="prazoRange" min="1" max="420" step="1" aria-label="Prazo em meses">
     </div>
     <label class="field"><span class="lbl">Mês da 1ª parcela</span>
-      <div class="inp"><input type="month" id="inicio"></div></label>
+      <div class="inp"><input type="month" id="inicio"></div><div class="hint" id="inicioHint"></div></label>
   </section>
 
   <details class="grp" id="extrasDetails" open>
@@ -442,23 +470,58 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
       <div class="inp"><input id="ltvMax" inputmode="decimal" autocomplete="off"><em>% do imóvel</em></div></label>
   </section>
 
-  <details class="grp">
-    <summary>TR estimada <span class="tag" id="trTag" hidden>ativa</span></summary>
-    <label class="check"><input type="checkbox" id="trOn"> Considerar TR estimada</label>
+  <details class="grp" id="corrDetails">
+    <summary><span>Correção do saldo <span class="tag" id="trTag" hidden></span></span></summary>
+    <div class="field"><span class="lbl">Índice do contrato <button class="q" type="button" data-g="tr" aria-label="O que é isso?">?</button></span>
+      <div class="seg" id="indiceSeg"><button type="button" data-v="nenhum">Nenhum</button><button type="button" data-v="tr">TR</button><button type="button" data-v="ipca">IPCA</button></div></div>
     <div id="trBox" hidden>
-      <label class="field" style="margin-top:8px"><span class="lbl">TR anual estimada</span>
-        <div class="inp"><input id="trAA" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div>
+      <label class="field"><span class="lbl" id="idxLbl">TR anual estimada</span>
+        <div class="inp"><input id="idxAA" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div>
         <div class="hint" id="trHint"></div></label>
     </div>
-    <p class="note">A TR real varia ao longo do financiamento. Este valor é apenas uma estimativa para simulação. Com TR = 0%, o saldo não é corrigido.</p>
+    <p class="note">O índice real varia ao longo do contrato; o valor aqui é uma estimativa. Contratos com IPCA costumam ter taxa de juros menor. Para comparar TR e IPCA, salve um cenário com cada um.</p>
   </details>
 
   <details class="grp">
     <summary>Seguros e tarifa mensal</summary>
-    <label class="field"><span class="lbl">Seguro MIP (morte e invalidez)</span><div class="inp"><em>R$</em><input id="mip" inputmode="decimal"><em>/mês</em></div></label>
-    <label class="field"><span class="lbl">Seguro DFI (danos físicos)</span><div class="inp"><em>R$</em><input id="dfi" inputmode="decimal"><em>/mês</em></div></label>
+    <div class="field"><span class="lbl">Como informar os seguros <button class="q" type="button" data-g="mip" aria-label="O que é isso?">?</button></span>
+      <div class="seg" id="segModoSeg"><button type="button" data-v="pct">Percentual</button><button type="button" data-v="fixo">Valor fixo</button></div></div>
+    <div id="segPctBox">
+      <label class="field"><span class="lbl">MIP (morte e invalidez)</span><div class="inp"><input id="mipPct" inputmode="decimal" placeholder="0"><em>% do saldo ao mês</em></div></label>
+      <label class="field"><span class="lbl">DFI (danos ao imóvel)</span><div class="inp"><input id="dfiPct" inputmode="decimal" placeholder="0"><em>% do imóvel ao mês</em></div><div class="hint" id="segPctHint"></div></label>
+      <p class="note" style="margin-bottom:14px">Use os percentuais da simulação do seu banco. O MIP depende da sua idade e cai junto com o saldo.</p>
+    </div>
+    <div id="segFixoBox" hidden>
+      <label class="field"><span class="lbl">Seguro MIP</span><div class="inp"><em>R$</em><input id="mip" inputmode="decimal"><em>/mês</em></div></label>
+      <label class="field"><span class="lbl">Seguro DFI</span><div class="inp"><em>R$</em><input id="dfi" inputmode="decimal"><em>/mês</em></div></label>
+    </div>
     <label class="field"><span class="lbl">Tarifa administrativa</span><div class="inp"><em>R$</em><input id="tarifa" inputmode="decimal"><em>/mês</em></div></label>
-    <p class="note">Somados à prestação enquanto houver saldo. Na prática o MIP varia com idade e saldo; aqui é um valor fixo.</p>
+  </details>
+
+  <details class="grp" id="fgtsDetails">
+    <summary><span>FGTS <span class="tag brass" id="fgtsTag" hidden></span></span></summary>
+    <label class="check"><input type="checkbox" id="fgtsOn"> Usar meu FGTS <button class="q" type="button" data-g="fgts" aria-label="O que é isso?">?</button></label>
+    <div id="fgtsBox" hidden>
+      <label class="field" style="margin-top:8px"><span class="lbl">Saldo atual do FGTS</span><div class="inp"><em>R$</em><input id="fgtsSaldo" inputmode="decimal" placeholder="0"></div></label>
+      <label class="field"><span class="lbl">Depósito mensal</span><div class="inp"><em>R$</em><input id="fgtsMensal" inputmode="decimal" placeholder="0"><em>/mês</em></div><div class="hint">8% do salário bruto. Some os depósitos de quem vai compor a renda.</div></label>
+      <label class="check"><input type="checkbox" id="fgtsEntrada"> Usar o saldo atual na entrada</label>
+      <label class="check"><input type="checkbox" id="fgtsAmort"> Amortizar com o FGTS a cada 2 anos</label>
+      <div class="hint" id="fgtsHint"></div>
+      <div id="fgtsAlert" class="alert warn" hidden></div>
+    </div>
+    <p class="note">Regras atuais: imóvel de até <span class="fgtsTeto"></span>, residencial, para moradia própria, e 3 anos de carteira assinada (somando todos os empregos). O intervalo entre usos para amortizar é de 2 anos.</p>
+  </details>
+
+  <details class="grp" id="plantaDetails">
+    <summary><span>Imóvel na planta <span class="tag" id="plantaTag" hidden></span></span></summary>
+    <label class="check"><input type="checkbox" id="plantaOn"> O imóvel ainda está em obra</label>
+    <div id="plantaBox" hidden>
+      <label class="field" style="margin-top:8px"><span class="lbl">Meses até a entrega das chaves</span><div class="inp"><input id="plantaMeses" inputmode="numeric"><em>meses</em></div></label>
+      <div class="field"><span class="lbl">Quando o banco entra <button class="q" type="button" data-g="obra" aria-label="O que é isso?">?</button></span>
+        <div class="seg" id="plantaModoSeg"><button type="button" data-v="chaves">Nas chaves</button><button type="button" data-v="obra">Durante a obra</button></div>
+        <div class="hint" id="plantaModoHint"></div></div>
+      <label class="field" id="inccField"><span class="lbl">INCC estimado <button class="q" type="button" data-g="incc" aria-label="O que é isso?">?</button></span><div class="inp"><input id="plantaIncc" inputmode="decimal"><em>% a.a.</em></div></label>
+    </div>
   </details>
 
   <details class="grp">
@@ -489,7 +552,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
       <div class="btn-row">
         <button class="btn primary wide" type="button" id="btnGerar"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/></svg>Gerar relatório</button>
         <button class="btn" type="button" id="btnSalvarCen">Salvar cenário</button>
-        <button class="btn" type="button" id="btnShareTop">Compartilhar</button>
+        <button class="btn" type="button" id="btnShareTop">Enviar link</button>
         <button class="btn" type="button" id="btnEditar">Ajustar dados</button>
       </div>
     </article>
@@ -497,8 +560,13 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
     <div class="tiles" id="tiles"></div>
 
     <article class="panel" id="extrasRes" hidden>
-      <h2>Efeito das amortizações extras</h2>
+      <h2 id="extrasResTitle">Efeito das amortizações extras</h2>
       <div id="extrasResBody"></div>
+    </article>
+
+    <article class="panel" id="obraRes" hidden>
+      <h2>Fase de obra</h2>
+      <div id="obraBody"></div>
     </article>
 
     <div class="grid2">
@@ -517,7 +585,9 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
         <div class="btn-row" style="align-content:start">
           <button class="btn primary" type="button" id="btnImg">Salvar imagem</button>
           <button class="btn" type="button" id="btnShare">Compartilhar texto</button>
-          <button class="btn wide" type="button" id="btnCopy">Copiar resumo</button>
+          <button class="btn" type="button" id="btnCopy">Copiar resumo</button>
+          <button class="btn" type="button" id="btnCopyLink">Copiar link</button>
+          <p class="note wide" style="margin:2px 0 0">O link abre o simulador já com os seus dados.</p>
         </div>
       </div>
     </article>
@@ -594,8 +664,58 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
       <div class="btn-row" style="margin-top:12px">
         <button class="btn" type="button" id="btnSalvarCen2">Salvar cenário atual</button>
         <button class="btn" type="button" id="btnCompCen">Comparar cenários</button>
+        <button class="btn" type="button" id="btnExpCen">Exportar cenários</button>
+        <button class="btn" type="button" id="btnImpCen">Importar cenários</button>
       </div>
+      <input type="file" id="impFile" accept="application/json,.json" hidden>
+      <p class="note">Os cenários ficam salvos neste navegador. Exporte para levar a outro aparelho.</p>
       <div id="cenComp" hidden style="margin-top:14px"></div>
+    </article>
+  </section>
+
+
+  <!-- ======================= PLANEJAR ======================= -->
+  <section class="tab" id="tab-planejar" aria-label="Planejar">
+    <article class="panel">
+      <h2>Meta de quitação</h2>
+      <p class="lead">Quanto amortizar para quitar no prazo que você quer.</p>
+      <div class="pin"><label class="field"><span class="lbl">Quero quitar em</span><div class="inp sm"><input data-p="metaAnos" data-t="int" inputmode="numeric" autocomplete="off"><em>anos</em></div></label></div>
+      <div id="metaBody"></div>
+    </article>
+
+    <article class="panel">
+      <h2>Amortizar ou investir?</h2>
+      <p class="lead">Você tem um valor extra todo mês. Compensa mais amortizar o financiamento ou aplicar esse dinheiro?</p>
+      <div class="pin"><label class="field"><span class="lbl">Valor extra por mês</span><div class="inp sm"><em>R$</em><input data-p="extraMes" data-t="money" inputmode="decimal" autocomplete="off"></div></label><label class="field"><span class="lbl">Rendimento líquido <button class="q" type="button" data-g="rend" aria-label="O que é isso?">?</button></span><div class="inp sm"><input data-p="rend" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label></div>
+      <div id="investBody"></div>
+      <div class="chart"><canvas id="cvInvest"></canvas><div class="tip" hidden></div></div>
+      <p class="note" id="investNote"></p>
+    </article>
+
+    <article class="panel">
+      <h2>Comprar ou alugar?</h2>
+      <p class="lead">Seu patrimônio ao longo do tempo: comprar financiado ou alugar e investir a entrada e a diferença das parcelas.</p>
+      <div class="pin"><label class="field"><span class="lbl">Aluguel de um imóvel parecido</span><div class="inp sm"><em>R$</em><input data-p="aluguel" data-t="money" inputmode="decimal" autocomplete="off"><em>/mês</em></div></label><label class="field"><span class="lbl">Reajuste do aluguel</span><div class="inp sm"><input data-p="aluguelReaj" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label><label class="field"><span class="lbl">Valorização do imóvel</span><div class="inp sm"><input data-p="valoriz" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label><label class="field"><span class="lbl">Rendimento líquido <button class="q" type="button" data-g="rend" aria-label="O que é isso?">?</button></span><div class="inp sm"><input data-p="rend" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label></div>
+      <div id="alugaBody"></div>
+      <div class="chart"><canvas id="cvAluga"></canvas><div class="tip" hidden></div></div>
+      <div class="legend" id="cvAlugaLeg"></div>
+      <p class="note">Simplificação: não considera IPTU, condomínio, manutenção nem o FGTS de quem aluga.</p>
+    </article>
+
+    <article class="panel">
+      <h2>Em valores de hoje</h2>
+      <p class="lead">Com a inflação, a mesma parcela pesa menos no orçamento com o passar dos anos.</p>
+      <div class="pin"><label class="field"><span class="lbl">Inflação estimada</span><div class="inp sm"><input data-p="inflacao" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label><label class="field"><span class="lbl">Reajuste da renda</span><div class="inp sm"><input data-p="rendaReaj" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label></div>
+      <div id="hojeBody"></div>
+      <div class="chart"><canvas id="cvHoje"></canvas><div class="tip" hidden></div></div>
+      <div class="legend" id="cvHojeLeg"></div>
+    </article>
+
+    <article class="panel">
+      <h2>Portabilidade</h2>
+      <p class="lead">Quanto você economiza levando o financiamento para outro banco com taxa menor.</p>
+      <div class="pin"><label class="field"><span class="lbl">Trocar na parcela</span><div class="inp sm"><em>nº</em><input data-p="portMes" data-t="int" inputmode="numeric" autocomplete="off"></div></label><label class="field"><span class="lbl">Nova taxa</span><div class="inp sm"><input data-p="portTaxa" data-t="pct" inputmode="decimal" autocomplete="off"><em>% a.a.</em></div></label><label class="field"><span class="lbl">Custos da troca</span><div class="inp sm"><em>R$</em><input data-p="portCusto" data-t="money" inputmode="decimal" autocomplete="off"></div></label></div>
+      <div id="portBody"></div>
     </article>
   </section>
 
@@ -615,6 +735,8 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
 </main>
 
 <footer class="foot wrap">
+  <details class="gloss" id="glossario"><summary>Glossário</summary><dl id="glossList"></dl></details>
+  <p class="install"><button class="btn sm" type="button" id="btnInstall" hidden>Instalar como app</button> <span id="installHint">Para usar como app: no Android, menu do navegador → Instalar app; no iPhone, Compartilhar → Adicionar à Tela de Início.</span></p>
   Esta ferramenta é apenas uma simulação financeira e não representa proposta, aprovação ou oferta de crédito. Taxas, seguros, TR, tarifas, critérios de renda e condições podem variar conforme banco e perfil do cliente.
 </footer>
 
@@ -632,6 +754,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
     <iframe id="relFrame" title="Pré-visualização do relatório"></iframe>
   </div>
 </div>
+<div class="pop" id="pop" hidden role="dialog" aria-labelledby="popT"><b id="popT"></b><p id="popD"></p><button class="btn sm" type="button" id="popClose">Entendi</button></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -667,8 +790,9 @@ function buildExtras(n, cfg){
 }
 /**
  * Gera o cronograma completo.
- * o = { pv, iM, n, sistema:'SAC'|'PRICE', trM, seg, tarifa, extras:[], modo:'prazo'|'parcela' }
- * TR: saldo corrigido no início de cada mês antes do cálculo dos juros.
+ * o = { pv, iM, n, sistema:'SAC'|'PRICE', trM, seg, segSaldo, tarifa, extras:[], modo:'prazo'|'parcela' }
+ * trM: índice de correção mensal (TR ou IPCA); saldo corrigido no início de cada mês antes dos juros.
+ * seg: seguros fixos em R$/mês; segSaldo: fração do saldo devedor cobrada como seguro (ex.: MIP %).
  * SAC:  amortização = saldo corrigido / parcelas restantes (sem TR = PV/n constante).
  * PRICE: prestação recalculada sobre o saldo corrigido (sem TR = PMT constante).
  * Extras com modo 'prazo' mantêm amortização (SAC) ou prestação (PRICE) e encurtam o prazo;
@@ -677,13 +801,13 @@ function buildExtras(n, cfg){
 function simular(o){
   var rows = [], saldo = +o.pv || 0, n = Math.round(o.n) || 0, i = +o.iM || 0, tr = +o.trM || 0;
   var ex = o.extras || [], modo = o.modo === 'parcela' ? 'parcela' : 'prazo';
-  var seg = +o.seg || 0, tar = +o.tarifa || 0, isPrice = o.sistema === 'PRICE';
+  var seg = +o.seg || 0, segS = +o.segSaldo || 0, tar = +o.tarifa || 0, isPrice = o.sistema === 'PRICE';
   if (saldo > 0 && n >= 1){
     var amortBase = saldo / n, pmtBase = pmt(saldo, i, n);
     for (var k = 1; k <= n && saldo > 0; k++){
       var corr = saldo * tr;
       saldo += corr; amortBase *= 1 + tr; pmtBase *= 1 + tr;
-      var rem = n - k + 1, juros = saldo * i, amort;
+      var rem = n - k + 1, juros = saldo * i, segK = seg + saldo * segS, amort;
       if (!isPrice) amort = (modo === 'parcela') ? saldo / rem : amortBase;
       else amort = ((modo === 'parcela') ? pmt(saldo, i, rem) : pmtBase) - juros;
       if (amort < 0) amort = 0;
@@ -693,8 +817,8 @@ function simular(o){
       if (ex[k] > 0 && saldo > 0){ extra = Math.min(ex[k], saldo); saldo -= extra; }
       if (saldo < 0.005){ if (extra > 0) extra += saldo; else amort += saldo; saldo = 0; }
       var prest = amort + juros;
-      rows.push({ k:k, corr:corr, juros:juros, amort:amort, prest:prest, seg:seg, tarifa:tar,
-                  custos:seg + tar, total:prest + seg + tar, extra:extra, saldo:saldo });
+      rows.push({ k:k, corr:corr, juros:juros, amort:amort, prest:prest, seg:segK, tarifa:tar,
+                  custos:segK + tar, total:prest + segK + tar, extra:extra, saldo:saldo });
     }
   }
   return resumir(rows, o);
@@ -733,6 +857,11 @@ const PRAZOS_ANOS = [10,15,20,25,30,35];
 const PRAZOS_COMPARADOR = [240,300,360,420];
 const ENTRADAS_EXTRA = [50000,100000,200000];
 const MAX_CENARIOS = 4;
+/* Regras do FGTS (confira periodicamente): teto do imóvel definido pelo Conselho Curador em nov/2025,
+   intervalo mínimo entre usos para amortizar e rendimento anual do fundo (3% a.a. + TR, aqui sem a TR). */
+const FGTS_TETO = 2250000;
+const FGTS_INTERVALO = 24;
+const FGTS_REND_AA = 3;
 const LS_STATE = 'sfi_state_v1', LS_CEN = 'sfi_cenarios_v1', LS_TAB = 'sfi_tab_v1';
 const HTML2CANVAS = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const FONT_URL = 'https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap';
@@ -741,9 +870,9 @@ const FONT_URL = 'https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wgh
 /* Cores dos gráficos por papel (validadas para daltonismo; espelham os tokens --s-* do CSS). */
 const TH = {
   light:{ surface:'#ffffff', ink:'#0f1e33', ink2:'#44526a', muted:'#6b778a', grid:'#e8ecf2', axis:'#cdd5df', brass:'#a86b12', band:'rgba(15,30,51,.05)',
-    s:{ amort:'#2a78d6', juros:'#eb6834', entrada:'#1baf7a', extra:'#1baf7a', tr:'#eda100', seg:'#e87ba4', custos:'#4a3aa7', sac:'#2a78d6', price:'#4a3aa7', base:'#98a3b3', main:'#0f1e33' } },
+    s:{ amort:'#2a78d6', juros:'#eb6834', entrada:'#1baf7a', extra:'#1baf7a', tr:'#eda100', seg:'#e87ba4', custos:'#4a3aa7', sac:'#2a78d6', price:'#4a3aa7', buy:'#2a78d6', rent:'#4a3aa7', base:'#98a3b3', main:'#0f1e33' } },
   dark:{ surface:'#131d2b', ink:'#edf2f8', ink2:'#b9c4d2', muted:'#8a97a8', grid:'#213045', axis:'#2e3d52', brass:'#e0a94a', band:'rgba(255,255,255,.05)',
-    s:{ amort:'#3987e5', juros:'#d95926', entrada:'#199e70', extra:'#199e70', tr:'#c98500', seg:'#d55181', custos:'#9085e9', sac:'#3987e5', price:'#9085e9', base:'#5f6d80', main:'#edf2f8' } }
+    s:{ amort:'#3987e5', juros:'#d95926', entrada:'#199e70', extra:'#199e70', tr:'#c98500', seg:'#d55181', custos:'#9085e9', sac:'#3987e5', price:'#9085e9', buy:'#3987e5', rent:'#9085e9', base:'#5f6d80', main:'#edf2f8' } }
 };
 const FONT = '"Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -752,17 +881,37 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 function nextMonthStr(){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
 const DEFAULTS = {
   valor:1600000, entrada:400000, banco:'caixa', customTaxa:10.99, taxaAA:10.99, taxaUnit:'aa',
-  sistema:'SAC', prazo:360, tr:false, trAA:1.5, mip:0, dfi:0, tarifa:0, comp:30, ltvMax:80, renda:0,
+  sistema:'SAC', prazo:360, indice:'nenhum', trAA:1.5, ipcaAA:4, comp:30, ltvMax:80, renda:0,
+  segModo:'pct', mipPct:0, dfiPct:0, mip:0, dfi:0, tarifa:0,
   itbi:3, registro:0, avaliacao:0, outras:0, inicio:nextMonthStr(),
-  extrasOn:true, extraModo:'prazo', pontuais:[], rec:{ valor:0, cada:12, inicio:12, qtd:0 }
+  extrasOn:true, extraModo:'prazo', pontuais:[], rec:{ valor:0, cada:12, inicio:12, qtd:0 },
+  fgts:{ on:false, saldo:0, mensal:0, entrada:false, amortizar:true },
+  planta:{ on:false, meses:24, modo:'chaves', incc:5 },
+  plan:{ metaAnos:15, extraMes:1000, rend:9, aluguel:6400, aluguelReaj:4, valoriz:4, inflacao:4, rendaReaj:4, portMes:60, portTaxa:9.99, portCusto:0 }
 };
+const ENUMS = { sistema:['SAC','PRICE','COMP'], taxaUnit:['aa','am'], extraModo:['prazo','parcela'], indice:['nenhum','tr','ipca'], segModo:['pct','fixo'], banco:BANCOS.map(b => b.id) };
 const clone = o => JSON.parse(JSON.stringify(o));
 function lsGet(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
 function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+/* Normaliza qualquer estado (localStorage, cenário, link): só aceita chaves conhecidas e tipos válidos. */
+function sanitize(def, v){
+  if (typeof def === 'number'){ const x = Number(v); return isFinite(x) ? x : def; }
+  if (typeof def === 'boolean') return typeof v === 'boolean' ? v : def;
+  if (typeof def === 'string') return typeof v === 'string' ? v : def;
+  if (def && typeof def === 'object' && !Array.isArray(def)){ const o = {}; Object.keys(def).forEach(k => o[k] = sanitize(def[k], v && typeof v === 'object' ? v[k] : undefined)); return o; }
+  return def;
+}
 function normState(st){
-  const s = Object.assign(clone(DEFAULTS), st || {});
-  s.rec = Object.assign(clone(DEFAULTS.rec), (st && st.rec) || {});
-  if (!Array.isArray(s.pontuais)) s.pontuais = [];
+  st = st && typeof st === 'object' ? st : {};
+  if (st.indice == null && st.tr === true) st = Object.assign({}, st, { indice:'tr' });          // estado antigo (TR liga/desliga)
+  if (st.segModo == null && ((+st.mip || 0) > 0 || (+st.dfi || 0) > 0)) st = Object.assign({}, st, { segModo:'fixo' });
+  const s = sanitize(DEFAULTS, st);
+  Object.keys(ENUMS).forEach(k => { if (!ENUMS[k].includes(s[k])) s[k] = DEFAULTS[k]; });
+  if (!/^\d{4}-\d{2}$/.test(s.inicio)) s.inicio = DEFAULTS.inicio;
+  if (!['chaves','obra'].includes(st.planta && st.planta.modo)) s.planta.modo = 'chaves'; else s.planta.modo = st.planta.modo;
+  s.prazo = Math.max(1, Math.min(420, Math.round(s.prazo)));
+  s.pontuais = (Array.isArray(st.pontuais) ? st.pontuais : []).slice(0, 60)
+    .map(p => ({ mes:Math.max(1, Math.round(Number(p && p.mes) || 1)), valor:Math.max(0, Number(p && p.valor) || 0) }));
   return s;
 }
 let S = normState(lsGet(LS_STATE));
@@ -791,9 +940,9 @@ function parseBR(s){
 const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 function ym(k){
   const p = String(S.inicio || '').split('-').map(Number);
-  if (!p[0] || !p[1] || !(k >= 1)) return null;
+  if (!p[0] || !p[1] || !isFinite(k)) return null;
   const t = (p[1] - 1) + (Math.round(k) - 1);
-  return { y:p[0] + Math.floor(t / 12), m:t % 12 };
+  return { y:p[0] + Math.floor(t / 12), m:((t % 12) + 12) % 12 };
 }
 function labelMes(k){ const d = ym(k); return d ? MESES[d.m] + '/' + d.y : ''; }
 function fmtPrazo(m){
@@ -810,19 +959,68 @@ const isDesk = () => !!(window.matchMedia && matchMedia('(min-width: 1024px)').m
 const sistemaPrim = () => S.sistema === 'COMP' ? 'SAC' : S.sistema;
 const sistemaLabel = () => S.sistema === 'COMP' ? 'SAC x PRICE' : S.sistema;
 const bancoNome = () => (BANCOS.find(b => b.id === S.banco) || BANCOS[BANCOS.length - 1]).nome;
+const idxOn = st => (st || S).indice !== 'nenhum';
+const idxNome = st => ({ tr:'TR', ipca:'IPCA', nenhum:'' })[(st || S).indice];
+const idxAA = st => { st = st || S; return st.indice === 'ipca' ? +st.ipcaAA || 0 : st.indice === 'tr' ? +st.trAA || 0 : 0; };
+const fgtsAtivo = st => { st = st || S; return st.fgts.on && (+st.valor || 0) <= FGTS_TETO; };
+/* Amortizações com FGTS: saldo atual (se não usado na entrada) já na 1ª parcela; depois o acumulado a cada 24 meses. */
+function fgtsExtras(n, st){
+  const ex = new Array(n + 2).fill(0), f = st.fgts;
+  if (!fgtsAtivo(st) || !f.amortizar) return ex;
+  const rm = taxaMensal(FGTS_REND_AA / 100);
+  let bal = f.entrada ? 0 : Math.max(0, +f.saldo || 0);
+  let next = (!f.entrada && bal > 0) ? 1 : FGTS_INTERVALO;
+  for (let k = 1; k <= n; k++){
+    bal = bal * (1 + rm) + Math.max(0, +f.mensal || 0);
+    if (k === next){ ex[k] = bal; bal = 0; next += FGTS_INTERVALO; }
+  }
+  return ex;
+}
+/* Imóvel na planta: 'chaves' corrige o valor a financiar pelo INCC até a entrega;
+   'obra' cobra juros sobre o valor já liberado pelo banco (liberação linear) até as chaves. */
+function obraCalc(st, pv0){
+  const p = st.planta, N = Math.round(+p.meses || 0);
+  if (!p.on || N < 1 || pv0 <= 0) return { on:false, pvEff:pv0, juros:0, inccAdd:0, n:0 };
+  if (p.modo === 'obra'){
+    const iM = taxaMensal((+st.taxaAA || 0) / 100), rows = [];
+    for (let j = 1; j <= N; j++){ const lib = pv0 * j / N; rows.push({ j, lib, juros:lib * iM }); }
+    return { on:true, modo:'obra', n:N, pvEff:pv0, inccAdd:0, rows, juros:rows.reduce((a, r) => a + r.juros, 0), p1:rows[0].juros, pN:rows[N - 1].juros };
+  }
+  const f = Math.pow(1 + taxaMensal((+p.incc || 0) / 100), N);
+  return { on:true, modo:'chaves', n:N, pvEff:pv0 * f, inccAdd:pv0 * (f - 1), juros:0 };
+}
+function segParams(st){
+  return st.segModo === 'pct'
+    ? { seg:(+st.valor || 0) * (+st.dfiPct || 0) / 100, segSaldo:(+st.mipPct || 0) / 100 }
+    : { seg:(+st.mip || 0) + (+st.dfi || 0), segSaldo:0 };
+}
 function params(over){
-  const st = Object.assign({}, S, over || {});
-  const pv = Math.max(0, (+st.valor || 0) - (+st.entrada || 0));
+  over = over || {};
+  const st = Object.assign({}, S, over);
+  const pv0 = Math.max(0, (+st.valor || 0) - (+st.entrada || 0));
   const n = Math.max(1, Math.min(420, Math.round(+st.prazo || 1)));
+  const ex = over.extrasVec ? over.extrasVec.slice() : buildExtras(n, { on: st.extrasOn, pontuais: st.pontuais, rec: st.rec });
+  if (!over.noFgts){ const fx = fgtsExtras(n, st); for (let k = 1; k <= n; k++) ex[k] = (ex[k] || 0) + fx[k]; }
+  const sg = segParams(st);
   return {
-    pv, n, iM: taxaMensal((+st.taxaAA || 0) / 100),
+    pv: obraCalc(st, pv0).pvEff, n, iM: taxaMensal((+st.taxaAA || 0) / 100),
     sistema: st.sistemaCalc || (st.sistema === 'COMP' ? 'SAC' : st.sistema),
-    trM: st.tr ? taxaMensal((+st.trAA || 0) / 100) : 0,
-    seg: (+st.mip || 0) + (+st.dfi || 0), tarifa: +st.tarifa || 0, modo: st.extraModo,
-    extras: buildExtras(n, { on: st.extrasOn, pontuais: st.pontuais, rec: st.rec })
+    trM: idxOn(st) ? taxaMensal(idxAA(st) / 100) : 0,
+    seg: sg.seg, segSaldo: sg.segSaldo, tarifa: +st.tarifa || 0, modo: st.extraModo, extras: ex
   };
 }
 const sim = over => simular(params(over));
+/* CET: taxa interna de retorno dos fluxos (valor recebido menos avaliação; parcelas, seguros, tarifa e extras pagos). */
+function calcCET(r){
+  if (!r || !r.rows.length || !(r.pv > 0)) return null;
+  const cf0 = r.pv - (+S.avaliacao || 0), out = r.rows.map(x => x.total + x.extra);
+  const npv = m => { let v = cf0, d = 1; for (let k = 0; k < out.length; k++){ d /= 1 + m; v -= out[k] * d; } return v; };
+  let lo = 0, hi = 0.05;
+  if (npv(lo) >= 0) return 0;
+  while (npv(hi) < 0 && hi < 1) hi *= 2;
+  for (let it = 0; it < 80; it++){ const mid = (lo + hi) / 2; if (npv(mid) < 0) lo = mid; else hi = mid; }
+  return taxaAnual((lo + hi) / 2) * 100;
+}
 function annual(r){
   const out = [];
   for (let y = 0; y * 12 < r.rows.length; y++){
@@ -833,26 +1031,32 @@ function annual(r){
   }
   return out;
 }
-function equity(r){ const v = +S.valor || 0; if (!v) return []; return [ (v - r.pv) / v * 100 ].concat(r.rows.map(x => Math.max(0, (v - x.saldo) / v * 100))); }
+function equity(r){ const v = +S.valor || 0; if (!v) return []; return [ Math.max(0, (v - r.pv) / v * 100) ].concat(r.rows.map(x => Math.max(0, (v - x.saldo) / v * 100))); }
 function cumul(r){
   let j = 0, a = 0; const J = [], A = []; let cross = null;
   r.rows.forEach(x => { j += x.juros; a += x.amort + x.extra; J.push(j); A.push(a); if (cross == null && a >= j) cross = x.k; });
   return { J, A, cross };
 }
 function custosCompra(){ const itbiV = S.valor * (+S.itbi || 0) / 100; return { itbi:itbiV, outros:(+S.registro || 0) + (+S.avaliacao || 0) + (+S.outras || 0), total:itbiV + (+S.registro || 0) + (+S.avaliacao || 0) + (+S.outras || 0) }; }
+const totBanco = r => r.totalPago + (R.obra && R.obra.on ? R.obra.juros : 0);
 let R = {};
 function compute(){
   R.pv = Math.max(0, S.valor - S.entrada);
   R.entradaPct = S.valor > 0 ? S.entrada / S.valor * 100 : 0;
   R.ltv = S.valor > 0 ? R.pv / S.valor * 100 : 0;
+  R.obra = obraCalc(S, R.pv);
   R.sac = sim({ sistemaCalc:'SAC' });
   R.price = sim({ sistemaCalc:'PRICE' });
   R.main = sistemaPrim() === 'SAC' ? R.sac : R.price;
-  R.base = sim({ extrasOn:false });
+  R.base = sim({ extrasOn:false, noFgts:true });
   R.hasExtras = R.main.extras > 0 || R.sac.extras > 0 || R.price.extras > 0;
   R.renda = R.main.p1 != null ? R.main.p1 / (S.comp / 100) : null;
   R.ann = annual(R.main);
   R.cc = custosCompra();
+  R.cet = calcCET(R.main); R.cetSac = calcCET(R.sac); R.cetPrice = calcCET(R.price);
+  const fx = fgtsExtras(S.prazo, S);
+  R.fgtsAmort = R.main.rows.reduce((a, x) => a + Math.min(fx[x.k] || 0, x.extra), 0);
+  R.fgtsEntrada = fgtsAtivo() && S.fgts.entrada ? Math.min(Math.max(0, +S.fgts.saldo || 0), S.entrada) : 0;
 }
 
 /* =====================================================================
@@ -1108,7 +1312,7 @@ function specAnual(){
   const st = [{ label:'Amortização', color:'amort', vals:R.ann.map(a => a.amort) }];
   if (R.ann.some(a => a.extra > 0)) st.push({ label:'Amortização extra', color:'extra', vals:R.ann.map(a => a.extra) });
   st.push({ label:'Juros', color:'juros', vals:R.ann.map(a => a.juros) });
-  if (R.ann.some(a => a.corr > 0)) st.push({ label:'Correção TR', color:'tr', vals:R.ann.map(a => a.corr) });
+  if (R.ann.some(a => a.corr > 0)) st.push({ label:'Correção ' + idxNome(), color:'tr', vals:R.ann.map(a => a.corr) });
   return { type:'stack', cats:R.ann.map(a => String(a.ano)), stacks:st, yFmt:brlAxis, tipFmt:money,
     tipTitle:ci => { const a = R.ann[ci]; return 'Ano ' + a.ano + (labelMes(a.k0) ? ' · ' + labelMes(a.k0) + ' a ' + labelMes(a.k1) : ''); }, h:H_line };
 }
@@ -1127,15 +1331,12 @@ function specAcum(){
   return { type:'line', series:[{ label:'Amortização acumulada', color:'amort', vals:c.A }, { label:'Juros acumulados', color:'juros', vals:c.J }],
     vlines:vl, yFmt:brlAxis, tipFmt:money, tipTitle:kTitle, h:H_line };
 }
-function donutSegs(r){
-  const segs = [{ label:'Valor financiado', color:'amort', value:r.pv }, { label:'Juros', color:'juros', value:r.juros }];
-  if (r.corr > 0) segs.push({ label:'Correção TR', color:'tr', value:r.corr });
-  if (r.custos > 0) segs.push({ label:'Seguros e tarifa', color:'seg', value:r.custos });
-  return segs.filter(s => s.value > 0);
+function donutSegs(){
+  return custoItens().filter(x => x.role !== 'entrada' && x.role !== 'custos').map(x => ({ label:x.label, color:x.role, value:x.value }));
 }
 function specDonut(){
   const r = R.main; if (R.pv <= 0) return { empty:'Sem dados', h:W => Math.min(W, 240) };
-  return { type:'donut', segs:donutSegs(r), center:['Total pago', brlShort(r.totalPago)], h:W => Math.min(W, 250) };
+  return { type:'donut', segs:donutSegs(), center:['Total pago', brlShort(totBanco(r))], h:W => Math.min(W, 250) };
 }
 function specVS(){
   if (R.pv <= 0) return { empty:'Sem dados', h:() => 160 };
@@ -1154,13 +1355,14 @@ function specPrazo(key){
 /* ---------- renderização ---------- */
 function vOrQuit(v, r){ return v == null ? (r.n < r.nContratado ? 'quitado' : '—') : brl(v); }
 function heroSentence(){
-  const m = R.main, sys = sistemaPrim();
-  if (S.sistema === 'COMP') return `No SAC a parcela começa maior e cai até ${brl(R.sac.last)}; no PRICE ela fica em torno de ${brl(R.price.p1)}${S.tr ? ', corrigida pela TR' : ''}.`;
+  const m = R.main, sys = sistemaPrim(), corr = idxOn() ? ', corrigida pela ' + idxNome() : '';
+  if (S.sistema === 'COMP') return `No SAC a parcela começa maior e cai até ${brl(R.sac.last)}; no PRICE ela fica em torno de ${brl(R.price.p1)}${corr}.`;
   let s;
   if (sys === 'SAC') s = `Cai todo mês até ${brl(m.last)} na última parcela`;
-  else if (!S.tr && !(m.extras > 0 && S.extraModo === 'parcela')) s = `Fica fixa durante as ${m.n} parcelas`;
+  else if (!idxOn() && !(m.extras > 0 && S.extraModo === 'parcela')) s = `Fica fixa durante as ${m.n} parcelas`;
   else s = `Varia ao longo do contrato e termina em ${brl(m.last)}`;
-  if (m.extras > 0 && S.extraModo === 'prazo') s += `, e com as amortizações extras você quita em ${fmtPrazo(m.n)} (${m.n} parcelas)`;
+  if (m.extras > 0 && S.extraModo === 'prazo') s += `, e com as amortizações ${R.fgtsAmort > 0 ? 'e o FGTS ' : 'extras '}você quita em ${fmtPrazo(m.n)} (${m.n} parcelas)`;
+  if (R.obra.on) s += R.obra.modo === 'obra' ? `. Antes, durante a obra, você paga juros de obra de ${brl(R.obra.p1)} a ${brl(R.obra.pN)} por mês` : `. Até as chaves, o valor a financiar é corrigido pelo INCC`;
   return s + '.';
 }
 function renderHero(){
@@ -1177,55 +1379,80 @@ function renderHero(){
     : [['Após 1 ano', vOrQuit(r.p13, r)], ['<i>●</i>Após 5 anos', vOrQuit(r.p61, r)], ['<i>●</i>No meio', vOrQuit(r.pMeio, r)], ['<i>●</i>Última', vOrQuit(r.last, r)]];
   $('#heroKeys').innerHTML = keys.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
   const iM = taxaMensal(S.taxaAA / 100) * 100;
-  const facts = [['Imóvel', brlShort(S.valor)], ['Entrada', brlShort(S.entrada) + ' (' + pct(R.entradaPct, R.entradaPct % 1 ? 1 : 0) + ')'], ['Financiado', brlShort(R.pv)],
+  const facts = [['Imóvel', brlShort(S.valor)], ['Entrada', brlShort(S.entrada) + ' (' + pct(R.entradaPct, R.entradaPct % 1 ? 1 : 0) + ')'], ['Financiado', brlShort(r.pv)],
     [esc(bancoNome()), pct(S.taxaAA) + ' a.a.'], ['≈', pct(iM, 4) + ' a.m.'], ['Prazo', fmtPrazo(S.prazo)]];
-  const custo = (+S.mip || 0) + (+S.dfi || 0) + (+S.tarifa || 0);
-  if (custo > 0) facts.push(['Seguros', brl(custo) + '/mês']);
-  if (S.tr) facts.push(['TR', pct(S.trAA) + ' a.a.']);
+  const custo = r.rows.length ? r.rows[0].custos : 0;
+  if (custo > 0) facts.push(['Seguros e tarifa', brl(custo) + '/mês']);
+  if (idxOn()) facts.push([idxNome(), pct(idxAA()) + ' a.a.']);
+  if (fgtsAtivo()) facts.push(['FGTS', R.fgtsAmort > 0 || R.fgtsEntrada > 0 ? brlShort(R.fgtsAmort + R.fgtsEntrada) : 'ativo']);
+  if (R.obra.on) facts.push(['Na planta', R.obra.n + ' meses']);
   $('#heroFacts').innerHTML = facts.map(([k, v]) => `<span class="fact">${k} <b>${v}</b></span>`).join('');
 }
+const Qb = g => `<button class="q" type="button" data-g="${g}" aria-label="O que é isso?">?</button>`;
 function renderTiles(){
   const r = R.main, c = S.sistema === 'COMP';
   const t = [
-    ['Valor financiado', brl(R.pv), 'LTV de ' + pct(R.ltv)],
-    ['Juros totais', brl(r.juros), c ? 'SAC · PRICE ' + brlShort(R.price.juros) : pct(R.pv ? r.juros / R.pv * 100 : 0, 0) + ' do financiado'],
-    ['Total pago ao banco', brl(r.totalPago), r.n < r.nContratado ? 'em ' + r.n + ' parcelas' : 'em ' + r.n + ' parcelas'],
-    ['Renda mínima', brl(R.renda), 'com ' + pct(S.comp, 0) + ' de comprometimento']
+    ['Valor financiado', brl(r.pv), R.obra.on && R.obra.modo === 'chaves' ? 'com INCC até as chaves' : 'LTV de ' + pct(R.ltv)],
+    ['Juros totais', brl(r.juros + (R.obra.on ? R.obra.juros : 0)), c ? 'PRICE: ' + brlShort(R.price.juros) : (R.obra.on && R.obra.juros ? 'inclui juros de obra' : pct(r.pv ? r.juros / r.pv * 100 : 0, 0) + ' do financiado')],
+    ['Total pago ao banco', brl(totBanco(r)), 'em ' + r.n + ' parcelas'],
+    ['CET ' + Qb('cet'), R.cet == null ? '—' : pct(R.cet) + ' a.a.', c ? 'PRICE: ' + pct(R.cetPrice) + ' a.a.' : 'custo efetivo total'],
+    ['Renda mínima', brl(R.renda), 'com ' + pct(S.comp, 0) + ' de comprometimento'],
+    ['Quitação', labelMes(r.n) || '—', fmtPrazo(r.n)]
   ];
-  $('#tiles').innerHTML = t.map(([a, b, e]) => `<div class="tile"><span>${a}</span><b title="${b}">${b}</b><em>${e}</em></div>`).join('');
+  $('#tiles').innerHTML = t.map(([a, b, e]) => `<div class="tile"><span>${a}</span><b>${b}</b><em>${e}</em></div>`).join('');
 }
 function renderExtrasRes(){
   const card = $('#extrasRes'), m = R.main, b = R.base;
   const on = m.extras > 0 && R.pv > 0;
   card.hidden = !on;
-  const badge = $('#extrasBadge'), tot = S.extrasOn ? m.extras : 0;
+  const badge = $('#extrasBadge'), tot = S.extrasOn ? m.extras - R.fgtsAmort : 0;
   badge.hidden = !(tot > 0); badge.textContent = brlShort(tot);
+  $('#fgtsTag').hidden = !fgtsAtivo(); $('#fgtsTag').textContent = R.fgtsAmort > 0 ? brlShort(R.fgtsAmort) : 'ativo';
   if (!on) return;
+  const comFgts = R.fgtsAmort > 0, soFgts = comFgts && R.fgtsAmort >= m.extras - 0.01;
+  $('#extrasResTitle').textContent = soFgts ? 'Efeito do FGTS' : comFgts ? 'Efeito das amortizações extras e do FGTS' : 'Efeito das amortizações extras';
   const red = b.n - m.n, econJ = b.juros - m.juros, econT = b.totalPago - m.totalPago;
   const qtd = m.rows.filter(r => r.extra > 0).length;
   let h = '<div class="stat-grid">';
-  h += `<div class="stat hl"><span>Juros economizados</span><b>${brl(econJ)}</b><em>${brlShort(econJ / m.extras * 1000).replace('R$ ', 'R$ ')} a cada R$ 1 mil aportado</em></div>`;
-  h += `<div class="stat"><span>Total aportado</span><b>${brl(m.extras)}</b><em>${qtd} aporte${qtd === 1 ? '' : 's'}</em></div>`;
+  h += `<div class="stat hl"><span>Juros economizados</span><b>${brl(econJ)}</b><em>${brlShort(econJ / m.extras * 1000)} a cada R$ 1 mil aportado</em></div>`;
+  h += `<div class="stat"><span>Total aportado</span><b>${brl(m.extras)}</b><em>${qtd} aporte${qtd === 1 ? '' : 's'}${comFgts && !soFgts ? ', ' + brlShort(R.fgtsAmort) + ' do FGTS' : ''}</em></div>`;
   if (S.extraModo === 'prazo'){
-    h += `<div class="stat hl"><span>Prazo reduzido em</span><b>${fmtPrazo(red)}</b><em>${red} parcelas a menos</em></div>`;
+    h += `<div class="stat hl"><span>Parcelas a menos</span><b>${red}</b><em>${fmtPrazo(red)} antes</em></div>`;
     h += `<div class="stat"><span>Quitação</span><b>${labelMes(m.n) || m.n + 'ª parcela'}</b><em>após ${m.n} parcelas</em></div>`;
   } else {
     const idx = m.rows.findIndex(r => r.extra > 0), k = idx >= 0 ? idx + 2 : null;
-    h += `<div class="stat hl"><span>Parcela após o 1º aporte</span><b>${brl(k ? m.at(k) : null)}</b><em>sem extras: ${brl(k ? b.at(k) : null)}</em></div>`;
-    h += `<div class="stat"><span>Última parcela</span><b>${brl(m.last)}</b><em>sem extras: ${brl(b.last)}</em></div>`;
+    h += `<div class="stat hl"><span>Parcela após o 1º aporte</span><b>${brl(k ? m.at(k) : null)}</b><em>sem aportes: ${brl(k ? b.at(k) : null)}</em></div>`;
+    h += `<div class="stat"><span>Última parcela</span><b>${brl(m.last)}</b><em>sem aportes: ${brl(b.last)}</em></div>`;
   }
   h += '</div><ul class="kv" style="margin-top:10px">';
-  h += `<li><span>Juros sem extras</span><b>${brl(b.juros)}</b></li><li><span>Juros com extras</span><b>${brl(m.juros)}</b></li>`;
+  h += `<li><span>Juros sem aportes</span><b>${brl(b.juros)}</b></li><li><span>Juros com aportes</span><b>${brl(m.juros)}</b></li>`;
   h += `<li class="tot"><span>Economia no total pago ao banco</span><b class="good">${brl(econT)}</b></li></ul>`;
-  if (S.sistema === 'COMP') h += '<p class="note">Valores do SAC. As demais seções aplicam as amortizações extras nos dois sistemas.</p>';
+  if (S.sistema === 'COMP') h += '<p class="note">Valores do SAC. As demais seções aplicam os aportes nos dois sistemas.</p>';
   $('#extrasResBody').innerHTML = h;
 }
+function renderObra(){
+  const o = R.obra; $('#obraRes').hidden = !o.on; $('#plantaTag').hidden = !o.on; $('#plantaTag').textContent = o.on ? o.n + ' meses' : '';
+  if (!o.on) return;
+  let h = '<div class="stat-grid">';
+  if (o.modo === 'obra'){
+    h += `<div class="stat"><span>Juros de obra no 1º mês</span><b>${brl(o.p1)}</b><em>sobem até ${brl(o.pN)} no último mês</em></div>`;
+    h += `<div class="stat"><span>Total de juros de obra</span><b>${brl(o.juros)}</b><em>em ${o.n} meses</em></div></div>`;
+    h += `<p class="note">Durante a obra você paga só juros sobre o valor já liberado. A 1ª parcela de amortização (${brl(R.main.p1)}) começa depois das chaves${labelMes(1) ? ', em ' + labelMes(1) : ''}.</p>`;
+  } else {
+    h += `<div class="stat"><span>Saldo a financiar nas chaves</span><b>${brl(o.pvEff)}</b><em>hoje: ${brl(R.pv)}</em></div>`;
+    h += `<div class="stat"><span>Correção pelo INCC</span><b>${brl(o.inccAdd)}</b><em>${pct(S.planta.incc, 1)} a.a. por ${o.n} meses</em></div></div>`;
+    h += `<p class="note">Até as chaves, o saldo a pagar é corrigido pelo INCC. O financiamento começa depois, sobre o valor corrigido${labelMes(1) ? ', com a 1ª parcela em ' + labelMes(1) : ''}.</p>`;
+  }
+  $('#obraBody').innerHTML = h;
+}
 function custoItens(){
-  const r = R.main, th = curTheme();
+  const r = R.main, th = curTheme(), o = R.obra;
   return [
     ['Entrada', S.entrada, 'entrada'], ['Custos da compra', R.cc.total, 'custos'], ['Valor financiado', R.pv, 'amort'],
-    ['Juros', r.juros, 'juros'], ['Correção TR', r.corr, 'tr'], ['Seguros e tarifa', r.custos, 'seg']
-  ].filter(x => x[1] > 0).map(x => ({ label:x[0], value:x[1], c:col(th, x[2]) }));
+    [o.on && o.juros ? 'Juros (inclui obra)' : 'Juros', r.juros + (o.on ? o.juros : 0), 'juros'],
+    [o.on && o.inccAdd ? 'Correção (' + [idxOn() ? idxNome() : '', 'INCC'].filter(Boolean).join(' e ') + ')' : 'Correção ' + idxNome(), r.corr + (o.on ? o.inccAdd : 0), 'tr'],
+    ['Seguros e tarifa', r.custos, 'seg']
+  ].filter(x => x[1] > 0.005).map(x => ({ label:x[0], value:x[1], role:x[2], c:col(th, x[2]) }));
 }
 function renderCusto(){
   const it = custoItens(), tot = it.reduce((a, x) => a + x.value, 0);
@@ -1251,11 +1478,14 @@ function renderRenda(){
 }
 function renderCompra(){
   $('#itbiHint').textContent = 'ITBI estimado: ' + brl(R.cc.itbi);
+  const tot = S.entrada + R.cc.total;
   $('#compraBody').innerHTML = '<ul class="kv">'
     + `<li><span>Entrada</span><b>${brl(S.entrada)}</b></li>`
     + `<li><span>ITBI (${pct(+S.itbi || 0)})</span><b>${brl(R.cc.itbi)}</b></li>`
     + `<li><span>Registro, avaliação e outras</span><b>${brl(R.cc.outros)}</b></li>`
-    + `<li class="tot"><span>Total necessário na compra</span><b>${brl(S.entrada + R.cc.total)}</b></li></ul>`;
+    + `<li class="tot"><span>Total necessário na compra</span><b>${brl(tot)}</b></li>`
+    + (R.fgtsEntrada > 0 ? `<li><span>Pago com o FGTS</span><b class="good">−${brl(R.fgtsEntrada)}</b></li><li class="tot"><span>Do seu bolso</span><b>${brl(tot - R.fgtsEntrada)}</b></li>` : '')
+    + '</ul>';
 }
 function renderLTV(){
   $('#finOut').textContent = brl(R.pv);
@@ -1283,7 +1513,8 @@ function renderVS(){
   if (R.pv <= 0){ $('#vsBody').innerHTML = '<p class="muted">Sem valor a financiar.</p>'; $('#vsDiff').innerHTML = ''; return; }
   const th = curTheme();
   const col2 = (t, r, c, a, z) => `<div style="--c:${c}"><h3>${t}</h3><dl><div><dt>${a}</dt><dd>${brl(r.p1)}</dd></div><div><dt>${z}</dt><dd>${brl(r.last)}</dd></div><div><dt>Total de juros</dt><dd>${brl(r.juros)}</dd></div><div><dt>Total pago</dt><dd>${brl(r.totalPago)}</dd></div>${r.n !== r.nContratado ? `<div><dt>Parcelas pagas</dt><dd>${r.n}</dd></div>` : ''}</dl></div>`;
-  $('#vsBody').innerHTML = '<div class="vs">' + col2('SAC', s, th.s.sac, 'Primeira parcela', 'Última parcela') + col2('PRICE', p, th.s.price, 'Parcela inicial', 'Parcela final aprox.') + '</div>';
+  $('#vsBody').innerHTML = '<div class="vs">' + col2('SAC', s, th.s.sac, 'Primeira parcela', 'Última parcela') + col2('PRICE', p, th.s.price, 'Parcela inicial', 'Parcela final aprox.') + '</div>'
+    + `<div class="vs-cet"><span class="fact">CET SAC <b>${pct(R.cetSac)} a.a.</b></span><span class="fact">CET PRICE <b>${pct(R.cetPrice)} a.a.</b></span>${Qb('cet')}</div>`;
   $('#vsDiff').innerHTML = `<li><span>Diferença total de juros (PRICE − SAC)</span><b>${brl(p.juros - s.juros)}</b></li>`
     + `<li><span>Diferença na 1ª parcela (SAC − PRICE)</span><b>${brl(s.p1 - p.p1)}</b></li>`
     + `<li><span>Diferença no total pago (PRICE − SAC)</span><b>${brl(p.totalPago - s.totalPago)}</b></li>`;
@@ -1317,7 +1548,7 @@ function renderLeads(){
   const c = cumul(R.main);
   $('#acumLead').textContent = R.pv <= 0 ? '' : c.cross ? `A partir de ${labelMes(c.cross) || 'parcela ' + c.cross} (parcela ${c.cross}), o total amortizado passa o total de juros pagos.` : 'Até o fim do contrato, os juros acumulados superam o valor amortizado.';
   $('#evoTag').textContent = sistemaLabel();
-  const segs = donutSegs(R.main), tot = segs.reduce((a, s) => a + s.value, 0) || 1, th = curTheme();
+  const segs = donutSegs(), tot = segs.reduce((a, s) => a + s.value, 0) || 1, th = curTheme();
   $('#donutLeg').innerHTML = segs.map(s => `<li><i style="background:${col(th, s.color)}"></i><span>${s.label}</span><b>${brl(s.value)}</b><em>${pct(s.value / tot * 100, 1)}</em></li>`).join('');
 }
 
@@ -1331,7 +1562,7 @@ function renderTable(){
   if (TAB !== 'tabela') return;
   const r = tblSource(), rows = r.rows;
   const hasEx = rows.some(x => x.extra > 0), hasTR = rows.some(x => x.corr > 0), anual = tbl.filtro === 'anual';
-  $('#tbl thead').innerHTML = `<tr><th>${anual ? 'Ano' : 'Nº'}</th><th>${anual ? 'Período' : 'Data'}</th><th>Prestação</th><th>Juros</th><th>Amortização</th>${hasEx ? '<th>Extra</th>' : ''}<th>Seguro/tarifa</th><th>Total</th>${hasTR ? '<th>TR</th>' : ''}<th>Saldo devedor</th></tr>`;
+  $('#tbl thead').innerHTML = `<tr><th>${anual ? 'Ano' : 'Nº'}</th><th>${anual ? 'Período' : 'Data'}</th><th>Prestação</th><th>Juros</th><th>Amortização</th>${hasEx ? '<th>Extra</th>' : ''}<th>Seguro/tarifa</th><th>Total</th>${hasTR ? '<th>' + idxNome() + '</th>' : ''}<th>Saldo devedor</th></tr>`;
   const tr = (a, b, x) => `<tr><td>${a}</td><td>${b}</td><td>${brl(x.prest)}</td><td>${brl(x.juros)}</td><td>${brl(x.amort)}</td>${hasEx ? `<td>${x.extra ? brl(x.extra) : '—'}</td>` : ''}<td>${brl(x.custos)}</td><td>${brl(x.total)}</td>${hasTR ? `<td>${brl(x.corr)}</td>` : ''}<td>${brl(x.saldo)}</td></tr>`;
   let html = '';
   if (!rows.length) html = '<tr><td colspan="10">Sem parcelas.</td></tr>';
@@ -1348,7 +1579,7 @@ function downloadBlob(content, type, name){
 }
 function exportCSV(){
   const r = tblSource(), n2 = v => num(v || 0, 2);
-  const L = ['Nº;Data;Prestação;Juros;Amortização;Amortização extra;Seguros e tarifa;Total;Correção TR;Saldo devedor'];
+  const L = ['Nº;Data;Prestação;Juros;Amortização;Amortização extra;Seguros e tarifa;Total;Correção monetária;Saldo devedor'];
   r.rows.forEach(x => L.push([x.k, labelMes(x.k), n2(x.prest), n2(x.juros), n2(x.amort), n2(x.extra), n2(x.custos), n2(x.total), n2(x.corr), n2(x.saldo)].join(';')));
   downloadBlob('﻿' + L.join('\r\n'), 'text/csv;charset=utf-8', `tabela-${(S.sistema === 'COMP' ? tbl.sis : S.sistema).toLowerCase()}-${S.prazo}m.csv`);
   toast('Planilha baixada');
@@ -1360,7 +1591,7 @@ let cenCompOpen = false;
 function snapshot(){
   const r = R.main;
   return { valor:S.valor, entrada:S.entrada, entradaPct:R.entradaPct, fin:R.pv, banco:bancoNome(), taxa:S.taxaAA, prazo:S.prazo,
-    sistema:sistemaPrim(), p1:r.p1, last:r.last, renda:R.renda, juros:r.juros, total:r.totalPago, n:r.n, extras:r.extras };
+    sistema:sistemaPrim(), p1:r.p1, last:r.last, renda:R.renda, juros:r.juros, total:totBanco(r), n:r.n, extras:r.extras, cet:R.cet, indice:idxNome() || 'nenhum' };
 }
 function saveCen(){
   if (R.pv <= 0){ toast('Não há valor financiado para salvar.'); return; }
@@ -1380,7 +1611,7 @@ function renderCen(){
   const cc = $('#cenComp'); cc.hidden = !cenCompOpen;
   if (!cenCompOpen) return;
   const cols = [{ nome:'Atual', res:snapshot() }].concat(list.map(c => ({ nome:'Cenário ' + c.letra, res:c.res })));
-  const rows = [['Imóvel', r => brl(r.valor)], ['Entrada', r => brl(r.entrada)], ['Entrada %', r => pct(r.entradaPct)], ['Financiado', r => brl(r.fin)], ['Banco', r => esc(r.banco)], ['Taxa', r => pct(r.taxa) + ' a.a.'], ['Prazo', r => r.prazo + ' meses'], ['Sistema', r => r.sistema], ['Extras', r => r.extras > 0 ? brl(r.extras) : '—'], ['Parcelas pagas', r => r.n], ['1ª parcela', r => brl(r.p1)], ['Última parcela', r => brl(r.last)], ['Renda mínima', r => brl(r.renda)], ['Juros totais', r => brl(r.juros)], ['Total pago', r => brl(r.total)]];
+  const rows = [['Imóvel', r => brl(r.valor)], ['Entrada', r => brl(r.entrada)], ['Entrada %', r => pct(r.entradaPct)], ['Financiado', r => brl(r.fin)], ['Banco', r => esc(r.banco)], ['Taxa', r => pct(r.taxa) + ' a.a.'], ['Prazo', r => r.prazo + ' meses'], ['Sistema', r => r.sistema], ['Correção', r => esc(r.indice || '—')], ['Extras e FGTS', r => r.extras > 0 ? brl(r.extras) : '—'], ['Parcelas pagas', r => r.n], ['1ª parcela', r => brl(r.p1)], ['Última parcela', r => brl(r.last)], ['Renda mínima', r => brl(r.renda)], ['Juros totais', r => brl(r.juros)], ['Total pago', r => brl(r.total)], ['CET', r => r.cet == null ? '—' : pct(r.cet) + ' a.a.']];
   cc.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th></th>${cols.map(c => `<th>${c.nome}</th>`).join('')}</tr></thead><tbody>${rows.map(([l, f]) => `<tr class="${l === '1ª parcela' ? 'hl' : ''}"><td>${l}</td>${cols.map(c => `<td>${f(c.res)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
@@ -1401,16 +1632,17 @@ function renderResumo(){
     </div>
     <div class="c-foot">Simulação sem valor de proposta, aprovação ou oferta de crédito.</div>`;
 }
-function resumoTexto(){
+function resumoTexto(withLink){
   const r = R.main, sys = sistemaPrim();
   const L = ['*Simulação de financiamento imobiliário*', '',
     'Imóvel: ' + brl(S.valor), 'Entrada: ' + brl(S.entrada) + ' (' + pct(R.entradaPct) + ')', 'Financiamento: ' + brl(R.pv),
     'Banco: ' + bancoNome(), 'Taxa: ' + pct(S.taxaAA) + ' a.a. (≈ ' + pct(taxaMensal(S.taxaAA / 100) * 100, 4) + ' a.m.)',
-    'Prazo: ' + fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)', 'Sistema: ' + sys + (S.tr ? ', TR est. ' + pct(S.trAA) + ' a.a.' : ''), '',
+    'Prazo: ' + fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)', 'Sistema: ' + sys + (idxOn() ? ', ' + idxNome() + ' est. ' + pct(idxAA()) + ' a.a.' : ''), '',
     '*1ª parcela: ' + brl(r.p1) + '*', 'Após 5 anos: ' + (r.p61 == null ? '—' : brl(r.p61)), 'Última parcela: ' + brl(r.last),
-    'Renda mínima estimada: ' + brl(R.renda) + ' (' + pct(S.comp, 0) + ')', 'Juros totais: ' + brl(r.juros), 'Total pago ao banco: ' + brl(r.totalPago)];
+    'Renda mínima estimada: ' + brl(R.renda) + ' (' + pct(S.comp, 0) + ')', 'Juros totais: ' + brl(r.juros), 'Total pago ao banco: ' + brl(totBanco(r)), 'CET: ' + pct(R.cet) + ' a.a.'];
   if (r.extras > 0) L.push('Amortizações extras: ' + brl(r.extras) + ', ' + (S.extraModo === 'prazo' ? 'quita em ' + r.n + ' parcelas' : 'prazo mantido') + ', economia de juros de ' + brl(R.base.juros - r.juros));
   if (S.sistema === 'COMP') L.push('', 'PRICE: 1ª parcela ' + brl(R.price.p1) + ', juros ' + brl(R.price.juros));
+  if (withLink && /^https?:$/.test(location.protocol)) L.push('', 'Veja a simulação: ' + linkURL());
   L.push('', 'Simulação apenas, não é proposta de crédito.');
   return L.join('\n');
 }
@@ -1419,7 +1651,7 @@ async function copyText(t){
   catch(e){ try { const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch(e2){ return false; } }
 }
 async function share(){
-  const text = resumoTexto();
+  const text = resumoTexto(true);
   if (navigator.share){ try { await navigator.share({ title:'Simulação de financiamento', text }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
   toast(await copyText(text) ? 'Resumo copiado' : 'Não foi possível compartilhar');
 }
@@ -1462,7 +1694,9 @@ function buildReport(){
   const hero = specHero(); hero.h = () => 260; hero.padT = 24;
   const anual = specAnual(), pat = specPat(), acum = specAcum(), donut = specDonut(), vs = specVS();
   const cust = custoItens().map(x => Object.assign({}, x)), custTot = cust.reduce((a, x) => a + x.value, 0) || 1;
-  const thL = TH.light; cust.forEach(x => { const map = { 'Entrada':'entrada', 'Custos da compra':'custos', 'Valor financiado':'amort', 'Juros':'juros', 'Correção TR':'tr', 'Seguros e tarifa':'seg' }; x.c = col(thL, map[x.label]); });
+  const thL = TH.light; cust.forEach(x => { x.c = col(thL, x.role); });
+  const segDesc = S.segModo === 'pct' ? `MIP ${smart(S.mipPct, 4)}% do saldo e DFI ${smart(S.dfiPct, 4)}% do imóvel ao mês` : brl((+S.mip || 0) + (+S.dfi || 0)) + '/mês';
+  const P = R.plan || {};
   const c = cumul(r), eq = equity(r), half = eq.findIndex(v => v >= 50);
   const prazos = prazoList(), ent = entradaOpts(), tax = taxaOpts();
   const ann = annual(r);
@@ -1521,10 +1755,10 @@ table.kv td:last-child{font-weight:700}
 <div class="answer"><div><div class="lbl">Primeira parcela${comp ? ' (SAC)' : ''}</div><div class="big"><small>R$</small>${num(r.p1 || 0, 2)}</div></div><p>${esc(heroSentence())}</p></div>
 
 <div class="kpis">
-<div><span>Valor financiado</span><b>${brl(R.pv)}</b></div>
-<div><span>Juros totais</span><b>${brl(r.juros)}</b></div>
-<div><span>Total pago ao banco</span><b>${brl(r.totalPago)}</b></div>
-<div><span>Renda mínima (${pct(S.comp, 0)})</span><b>${brl(R.renda)}</b></div>
+<div><span>Valor financiado</span><b>${brl(r.pv)}</b></div>
+<div><span>Juros totais</span><b>${brl(r.juros + (R.obra.on ? R.obra.juros : 0))}</b></div>
+<div><span>Total pago ao banco</span><b>${brl(totBanco(r))}</b></div>
+<div><span>CET</span><b>${pct(R.cet)} a.a.</b></div>
 <div><span>Após 1 ano</span><b>${vOrQuit(r.p13, r)}</b></div>
 <div><span>Após 5 anos</span><b>${vOrQuit(r.p61, r)}</b></div>
 <div><span>No meio (nº ${r.meioN})</span><b>${vOrQuit(r.pMeio, r)}</b></div>
@@ -1533,7 +1767,7 @@ table.kv td:last-child{font-weight:700}
 
 <section><h2>Dados da simulação</h2><div class="cols">
 ${kv([['Valor do imóvel', brl(S.valor)], ['Entrada', brl(S.entrada) + ' (' + pct(R.entradaPct) + ')'], ['Valor financiado', brl(R.pv)], ['Percentual financiado (LTV)', pct(R.ltv) + (S.ltvMax ? ' (limite ' + pct(S.ltvMax, 0) + ')' : '')], ['Banco', esc(bancoNome())], ['Taxa de juros', pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m.']])}
-${kv([['Prazo', fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)'], ['Sistema', sistemaLabel()], ['1ª parcela em', labelMes(1) || '—'], ['TR', S.tr ? pct(S.trAA) + ' a.a. (estimada)' : 'Não considerada'], ['Seguros e tarifa', brl((+S.mip || 0) + (+S.dfi || 0) + (+S.tarifa || 0)) + '/mês'], ['Amortizações extras', esc(extrasDesc())]])}
+${kv([['Prazo', fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)'], ['Sistema', sistemaLabel()], ['1ª parcela em', labelMes(1) || '—'], ['Correção do saldo', idxOn() ? idxNome() + ' de ' + pct(idxAA()) + ' a.a. (estimada)' : 'Não considerada'], ['Seguros', segDesc], ['Tarifa', brl(+S.tarifa || 0) + '/mês'], ['Amortizações extras', esc(extrasDesc())], ['FGTS', fgtsAtivo() ? [R.fgtsEntrada > 0 ? brl(R.fgtsEntrada) + ' na entrada' : '', R.fgtsAmort > 0 ? brl(R.fgtsAmort) + ' em amortizações a cada 2 anos' : ''].filter(Boolean).join('; ') || 'Ativo' : 'Não usado'], ['Imóvel na planta', R.obra.on ? R.obra.n + ' meses até as chaves, ' + (R.obra.modo === 'obra' ? 'juros de obra de ' + brl(R.obra.juros) : 'INCC de ' + pct(S.planta.incc, 1) + ' a.a. (+' + brl(R.obra.inccAdd) + ')') : 'Não']])}
 </div></section>
 
 <section><h2>Evolução da parcela</h2><p class="cap">Valor total de cada parcela ao longo do contrato, incluindo seguros e tarifa.</p><div class="fig">${img(hero, 260)}</div>${legend(hero.series.length > 1 ? hero.series.map(s => [s.label, col(L, s.color), s.dash]) : [])}</section>
@@ -1551,7 +1785,15 @@ ${kv([['Prazo', fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)'], ['Sistema', sis
 <div class="fig" style="max-width:250px;margin:0 auto">${donut.empty ? '' : img(donut, 250, 250)}<p class="cap" style="text-align:center;margin-top:4px">Total pago ao banco</p></div></div>
 </section>
 
-${r.extras > 0 ? `<section><h2>Efeito das amortizações extras</h2>${kv([['Total aportado', brl(r.extras)], ['Juros sem extras', brl(R.base.juros)], ['Juros com extras', brl(r.juros)], ['Juros economizados', brl(R.base.juros - r.juros)], ['Parcelas pagas', r.n + ' (sem extras: ' + R.base.n + ')'], ['Quitação', labelMes(r.n) || '—']])}</section>` : ''}
+${r.extras > 0 ? `<section><h2>Efeito das amortizações extras${R.fgtsAmort > 0 ? ' e do FGTS' : ''}</h2>${kv([['Total aportado', brl(r.extras) + (R.fgtsAmort > 0 ? ' (FGTS: ' + brl(R.fgtsAmort) + ')' : '')], ['Juros sem aportes', brl(R.base.juros)], ['Juros com aportes', brl(r.juros)], ['Juros economizados', brl(R.base.juros - r.juros)], ['Parcelas pagas', r.n + ' (sem aportes: ' + R.base.n + ')'], ['Quitação', labelMes(r.n) || '—']])}</section>` : ''}
+
+<section><h2>Planejamento</h2>${kv([
+  ['Meta de quitação em ' + fmtPrazo((+S.plan.metaAnos || 0) * 12), P.meta && P.meta.mes != null ? 'Amortizar ' + brl(P.meta.mes) + ' por mês (ou ' + brl(P.meta.ano) + ' por ano)' : P.meta && P.meta.ja ? 'O contrato já termina antes da meta' : '—'],
+  ['Amortizar ou investir ' + brl(+S.plan.extraMes || 0) + '/mês a ' + pct(+S.plan.rend, 1) + ' a.a.', P.invest ? (P.invest.f.a >= P.invest.f.b ? 'Amortizar' : 'Investir') + ' deixa ' + brl(Math.abs(P.invest.f.a - P.invest.f.b)) + ' a mais' + (P.invest.be != null ? '; equilíbrio em ' + pct(P.invest.be, 1) + ' a.a.' : '') : '—'],
+  ['Comprar ou alugar (aluguel ' + brl(+S.plan.aluguel || 0) + ', valorização ' + pct(+S.plan.valoriz, 1) + ' a.a.)', P.aluga ? 'Em ' + fmtPrazo(P.aluga.H) + ': comprar ' + brl(P.aluga.buy[P.aluga.H]) + ', alugar ' + brl(P.aluga.rent[P.aluga.H]) : '—'],
+  ['Última parcela em valores de hoje (inflação ' + pct(+S.plan.inflacao, 1) + ' a.a.)', P.hoje ? brl(P.hoje.real[P.hoje.real.length - 1]) : '—'],
+  ['Portabilidade na parcela ' + Math.round(+S.plan.portMes || 0) + ' para ' + pct(+S.plan.portTaxa) + ' a.a.', P.port && !P.port.erro ? (P.port.econLiq >= 0 ? 'Economia de ' : 'Prejuízo de ') + brl(Math.abs(P.port.econLiq)) : '—']
+])}</section>
 
 <section><h2>SAC x PRICE</h2><div class="fig">${img(vs, 220)}</div>${legend([['SAC', col(L, 'sac')], ['PRICE', col(L, 'price')]])}
 <table style="margin-top:10px"><thead><tr><th></th><th>SAC</th><th>PRICE</th><th>Diferença</th></tr></thead><tbody>
@@ -1575,12 +1817,12 @@ ${prazos.map(({ n, r: x }) => `<tr class="${n === S.prazo ? 'hl' : ''}"><td>${fm
 <div><h2>Renda</h2>${kv([['Comprometimento máximo', pct(S.comp, 0)], ['Renda mínima estimada', brl(R.renda)]].concat(S.renda > 0 && r.p1 ? [['Renda informada', brl(S.renda)], ['Comprometimento da 1ª parcela', pct(r.p1 / S.renda * 100, 1)]] : []))}</div>
 </div></section>
 
-<section class="long"><h2>Resumo anual (${sys})</h2><div class="wide"><table><thead><tr><th>Ano</th><th>Período</th><th>Prestações</th><th>Juros</th><th>Amortização</th>${r.extras > 0 ? '<th>Extras</th>' : ''}${r.custos > 0 ? '<th>Seguros</th>' : ''}${r.corr > 0 ? '<th>TR</th>' : ''}<th>Saldo final</th></tr></thead><tbody>
+<section class="long"><h2>Resumo anual (${sys})</h2><div class="wide"><table><thead><tr><th>Ano</th><th>Período</th><th>Prestações</th><th>Juros</th><th>Amortização</th>${r.extras > 0 ? '<th>Extras</th>' : ''}${r.custos > 0 ? '<th>Seguros</th>' : ''}${r.corr > 0 ? '<th>' + idxNome() + '</th>' : ''}<th>Saldo final</th></tr></thead><tbody>
 ${ann.map(a => `<tr><td>${a.ano}</td><td>${labelMes(a.k0)} – ${labelMes(a.k1)}</td><td>${brl(a.prest)}</td><td>${brl(a.juros)}</td><td>${brl(a.amort)}</td>${r.extras > 0 ? `<td>${a.extra ? brl(a.extra) : '—'}</td>` : ''}${r.custos > 0 ? `<td>${brl(a.custos)}</td>` : ''}${r.corr > 0 ? `<td>${brl(a.corr)}</td>` : ''}<td>${brl(a.saldo)}</td></tr>`).join('')}
 <tr class="tot"><td>Total</td><td></td><td>${brl(r.prest)}</td><td>${brl(r.juros)}</td><td>${brl(r.amort)}</td>${r.extras > 0 ? `<td>${brl(r.extras)}</td>` : ''}${r.custos > 0 ? `<td>${brl(r.custos)}</td>` : ''}${r.corr > 0 ? `<td>${brl(r.corr)}</td>` : ''}<td>${brl(0)}</td></tr>
 </tbody></table></div></section>
 
-<div class="foot"><b>Premissas.</b> Taxa mensal equivalente à anual: (1 + i<sub>a</sub>)<sup>1/12</sup> − 1. SAC com amortização constante; PRICE com prestação constante (PMT). TR aplicada ao saldo antes dos juros, quando considerada. Seguros e tarifa como valores fixos mensais. Valor do imóvel considerado constante.<br><br>Esta ferramenta é apenas uma simulação financeira e não representa proposta, aprovação ou oferta de crédito. Taxas, seguros, TR, tarifas, critérios de renda e condições podem variar conforme banco e perfil do cliente.</div>
+<div class="foot"><b>Premissas.</b> Taxa mensal equivalente à anual: (1 + i<sub>a</sub>)<sup>1/12</sup> − 1. SAC com amortização constante; PRICE com prestação constante (PMT). Correção (TR ou IPCA) aplicada ao saldo antes dos juros, quando considerada. MIP sobre o saldo e DFI sobre o valor do imóvel, ou valores fixos, conforme informado. CET calculado como taxa interna de retorno dos fluxos (valor recebido menos avaliação; parcelas, seguros, tarifa e amortizações). FGTS com rendimento de ${FGTS_REND_AA}% a.a. e uso a cada 2 anos. Valor do imóvel considerado constante, exceto em "comprar ou alugar".<br><br>Esta ferramenta é apenas uma simulação financeira e não representa proposta, aprovação ou oferta de crédito. Taxas, seguros, TR, tarifas, critérios de renda e condições podem variar conforme banco e perfil do cliente.</div>
 </div></body></html>`;
   return h;
 }
@@ -1595,12 +1837,246 @@ function openReport(){
 function closeReport(){ $('#relModal').hidden = true; document.body.style.overflow = ''; }
 const relName = () => `relatorio-financiamento-${new Date().toISOString().slice(0, 10)}.html`;
 
+/* =====================================================================
+   PLANEJAR — ferramentas de decisão (todas usam o motor de cálculo)
+   ===================================================================== */
+function planMeta(){
+  const alvo = Math.round((+S.plan.metaAnos || 0) * 12), sys = sistemaPrim();
+  const baseOv = { sistemaCalc:sys, extraModo:'prazo', rec:Object.assign({}, S.rec, { valor:0 }) };
+  const b = sim(baseOv);
+  if (R.pv <= 0 || !b.rows.length) return null;
+  if (!(alvo >= 1)) return { erro:'Informe em quantos anos você quer quitar.' };
+  if (b.n <= alvo) return { ja:true, b, alvo };
+  const run1 = (X, cada) => sim(Object.assign({}, baseOv, { extrasOn:true, pontuais:S.extrasOn ? S.pontuais : [], rec:{ valor:X, cada, inicio:cada, qtd:0 } }));
+  const solve = cada => {
+    let lo = 0, hi = b.pv;
+    if (run1(hi, cada).n > alvo) return null;
+    for (let i = 0; i < 46; i++){ const mid = (lo + hi) / 2; if (run1(mid, cada).n <= alvo) hi = mid; else lo = mid; }
+    return Math.ceil(hi / 10) * 10;
+  };
+  const mes = solve(1), ano = alvo >= 12 ? solve(12) : null;
+  return { b, alvo, mes, ano, rm:mes != null ? run1(mes, 1) : null };
+}
+function planInvest(){
+  const X = Math.max(0, +S.plan.extraMes || 0), sys = sistemaPrim();
+  const pB = params({ sistemaCalc:sys }), B = simular(pB);
+  if (!(X > 0) || !B.rows.length) return null;
+  const n = B.n, pA = Object.assign({}, pB, { extras:pB.extras.slice() });
+  for (let k = 1; k <= n; k++) pA.extras[k] = (pA.extras[k] || 0) + X;
+  const A = simular(pA);
+  const fv = aa => {
+    const r = taxaMensal(aa / 100); let ia = 0, ib = 0;
+    for (let k = 1; k <= n; k++){
+      const b = B.rows[k - 1], a = A.rows[k - 1];
+      ia = ia * (1 + r) + (b.total + b.extra + X - (a ? a.total + a.extra : 0));
+      ib = ib * (1 + r) + X;
+    }
+    return { a:ia, b:ib };
+  };
+  const f = fv(+S.plan.rend || 0), g = aa => { const v = fv(aa); return v.a - v.b; };
+  let be = null;
+  if (g(0) > 0 && g(60) < 0){ let lo = 0, hi = 60; for (let i = 0; i < 40; i++){ const mid = (lo + hi) / 2; if (g(mid) > 0) lo = mid; else hi = mid; } be = (lo + hi) / 2; }
+  return { X, A, B, n, f, be };
+}
+function planAluga(){
+  const r = R.main; if (!r.rows.length || !(S.valor > 0)) return null;
+  const H = r.nContratado, rm = taxaMensal((+S.plan.rend || 0) / 100), vm = taxaMensal((+S.plan.valoriz || 0) / 100);
+  const ra = (+S.plan.aluguelReaj || 0) / 100, al0 = Math.max(0, +S.plan.aluguel || 0);
+  let invB = 0, invR = S.entrada + R.cc.total;
+  const buy = [S.valor - r.pv], rent = [invR];
+  for (let k = 1; k <= H; k++){
+    const row = r.rows[k - 1], out = row ? row.total + row.extra : 0;
+    const d = out - al0 * Math.pow(1 + ra, Math.floor((k - 1) / 12));
+    invR = invR * (1 + rm) + Math.max(0, d); invB = invB * (1 + rm) + Math.max(0, -d);
+    buy.push(S.valor * Math.pow(1 + vm, k) - (row ? row.saldo : 0) + invB); rent.push(invR);
+  }
+  let cross = null; for (let k = 1; k <= H; k++) if (buy[k] >= rent[k] && buy[k - 1] < rent[k - 1]){ cross = k; break; }
+  return { buy, rent, H, cross };
+}
+function planHoje(){
+  const r = R.main; if (!r.rows.length) return null;
+  const im = taxaMensal((+S.plan.inflacao || 0) / 100), rr = (+S.plan.rendaReaj || 0) / 100;
+  const renda0 = +S.renda > 0 ? +S.renda : R.renda;
+  const real = r.rows.map((x, i) => x.total / Math.pow(1 + im, i));
+  const comp = r.rows.map((x, i) => renda0 ? x.total / (renda0 * Math.pow(1 + rr, Math.floor(i / 12))) * 100 : null);
+  const anos = [1, 5, 10, 15, 20, 25, 30, 35].filter(a => (a - 1) * 12 < r.n);
+  return { real, comp, anos, renda0, informada:+S.renda > 0, totalReal:real.reduce((a, v) => a + v, 0), totalNom:r.rows.reduce((a, x) => a + x.total, 0) };
+}
+function planPort(){
+  const r = R.main, m = Math.round(+S.plan.portMes || 0), sys = sistemaPrim();
+  if (!r.rows.length) return null;
+  if (m < 1 || m >= r.n) return { erro:`Escolha uma parcela entre 1 e ${r.n - 1}.` };
+  const saldo = r.rows[m - 1].saldo, rem = r.nContratado - m, base = params({ sistemaCalc:sys });
+  const old = simular(Object.assign({}, base, { pv:saldo, n:rem, extras:[] }));
+  const nov = simular(Object.assign({}, base, { pv:saldo, n:rem, iM:taxaMensal((+S.plan.portTaxa || 0) / 100), extras:[] }));
+  const custo = Math.max(0, +S.plan.portCusto || 0);
+  let acc = 0, pay = null;
+  for (let k = 0; k < nov.rows.length; k++){ acc += old.rows[k].total - nov.rows[k].total; if (pay == null && acc >= custo) pay = k + 1; }
+  return { m, saldo, rem, old, nov, custo, econJ:old.juros - nov.juros, econLiq:old.totalPago - nov.totalPago - custo, pay };
+}
+
+function specInvest(){
+  const p = R.plan && R.plan.invest; if (!p) return { empty:'Informe um valor extra por mês', h:() => 90 };
+  const hlA = p.f.a >= p.f.b;
+  return { type:'hbar', color:'amort', fmt:v => brlShort(v), h:() => 2 * 40 + 4,
+    items:[{ label:'Amortizar', value:Math.max(0, p.f.a), hl:hlA, rows:[['Patrimônio investido no fim', brl(p.f.a)], ['Quita em', fmtPrazo(p.A.n)]] },
+           { label:'Investir', value:Math.max(0, p.f.b), hl:!hlA, rows:[['Patrimônio investido no fim', brl(p.f.b)], ['Quita em', fmtPrazo(p.B.n)]] }] };
+}
+const offTicks = (N, maxT) => yearTicks(N, maxT).map(t => ({ i:t.i + 1, label:t.label })).filter(t => t.i < N);
+function specAluga(){
+  const p = R.plan && R.plan.aluga; if (!p) return { empty:'Sem dados', h:() => 120 };
+  return { type:'line', series:[{ label:'Comprar', color:'buy', vals:p.buy }, { label:'Alugar e investir', color:'rent', vals:p.rent }],
+    xTicks:offTicks, yFmt:brlAxis, tipFmt:money, tipTitle:i => i === 0 ? 'Na compra' : 'Após ' + fmtPrazo(i) + (labelMes(i) ? ' · ' + labelMes(i) : ''), h:H_line };
+}
+function specHoje(){
+  const p = R.plan && R.plan.hoje; if (!p) return { empty:'Sem dados', h:() => 120 };
+  return { type:'line', series:[{ label:'Parcela', color:'main', vals:R.main.rows.map(r => r.total) }, { label:'Em valores de hoje', color:'entrada', vals:p.real }],
+    yFmt:brlAxis, tipFmt:money, tipTitle:kTitle, h:W => Math.min(280, Math.max(190, W * 0.48)) };
+}
+const resBox = (big, txt, extra) => `<div class="res"><div class="big">${big.replace(/R\$ /g, 'R$\u00a0')}</div>${txt ? `<p>${txt}</p>` : ''}${extra || ''}</div>`;
+function renderPlan(){
+  R.plan = { meta:planMeta(), invest:planInvest(), aluga:planAluga(), hoje:planHoje(), port:planPort() };
+  const P = R.plan;
+  // meta
+  let h = '';
+  if (!P.meta) h = '<p class="muted">Sem valor a financiar.</p>';
+  else if (P.meta.erro) h = `<p class="muted">${P.meta.erro}</p>`;
+  else if (P.meta.ja) h = resBox(fmtPrazo(P.meta.b.n), `Sem amortizações extras mensais, seu financiamento já termina antes da meta de ${fmtPrazo(P.meta.alvo)}.`);
+  else if (P.meta.mes == null) h = '<p class="muted">Não foi possível chegar a essa meta.</p>';
+  else {
+    const m = P.meta;
+    h = resBox(brl(m.mes) + ' <small>por mês</small>', `Amortizando esse valor todo mês, desde a 1ª parcela, você quita em ${fmtPrazo(m.rm.n)}${labelMes(m.rm.n) ? ' (' + labelMes(m.rm.n) + ')' : ''}.`,
+      `<button class="btn primary" type="button" id="btnMetaAplicar">Usar ${brlShort(m.mes)} por mês nas amortizações</button>`)
+      + '<ul class="kv">' + (m.ano ? `<li><span>Ou uma vez por ano</span><b>${brl(m.ano)}</b></li>` : '')
+      + `<li><span>Juros economizados</span><b class="good">${brl(m.b.juros - m.rm.juros)}</b></li>`
+      + `<li><span>Prazo sem essa amortização</span><b>${fmtPrazo(m.b.n)}</b></li></ul>`
+      + '<p class="note">Reduzindo o prazo. Considera as amortizações pontuais e o FGTS que você já informou.</p>';
+  }
+  $('#metaBody').innerHTML = h;
+  // investir
+  const iv = P.invest;
+  if (!iv){ $('#investBody').innerHTML = '<p class="muted">Informe um valor extra por mês.</p>'; $('#investNote').textContent = ''; }
+  else {
+    const dif = iv.f.a - iv.f.b, win = dif >= 0 ? 'Amortizar' : 'Investir';
+    $('#investBody').innerHTML = resBox(`${win} deixa ${brl(Math.abs(dif))} a mais`, `Comparando o dinheiro acumulado em ${fmtPrazo(iv.n)}, com rendimento de ${pct(+S.plan.rend, 1)} a.a. Amortizando, você quita em ${fmtPrazo(iv.A.n)} e passa a investir o valor das parcelas.`)
+      + `<ul class="kv"><li><span>Juros economizados ao amortizar</span><b>${brl(iv.B.juros - iv.A.juros)}</b></li>`
+      + (iv.be != null ? `<li><span>Ponto de equilíbrio</span><b>${pct(iv.be, 1)} a.a. líquido</b></li>` : '') + '</ul>';
+    $('#investNote').textContent = iv.be != null ? `Se o investimento render mais que ${pct(iv.be, 1)} a.a. depois do IR, investir compensa; abaixo disso, amortizar compensa. Esse ponto fica perto do CET do seu financiamento (${pct(R.cet, 2)} a.a.).` : '';
+  }
+  // alugar
+  const al = P.aluga;
+  if (!al) $('#alugaBody').innerHTML = '<p class="muted">Sem dados.</p>';
+  else {
+    const fb = al.buy[al.H], fr = al.rent[al.H], win = fb >= fr ? 'Comprar' : 'Alugar e investir';
+    const crossTxt = al.cross ? `Comprar passa à frente após ${fmtPrazo(al.cross)}${labelMes(al.cross) ? ' (' + labelMes(al.cross) + ')' : ''}.` : (fb >= fr ? 'Comprar fica à frente desde o início.' : 'Com essas premissas, alugar fica à frente durante todo o período.');
+    $('#alugaBody').innerHTML = resBox(`${win} deixa ${brl(Math.abs(fb - fr))} a mais`, `Em ${fmtPrazo(al.H)}: comprando, patrimônio de ${brl(fb)}; alugando, ${brl(fr)}. ${crossTxt}`)
+      + `<p class="note">Referência: aluguel de 0,4% do valor do imóvel seria ${brl(S.valor * 0.004)} por mês.</p>`;
+  }
+  // valores de hoje
+  const hj = P.hoje;
+  if (!hj) $('#hojeBody').innerHTML = '<p class="muted">Sem dados.</p>';
+  else {
+    const r = R.main, last = r.rows.length - 1;
+    let t = `<div class="tbl-wrap" style="margin-bottom:10px"><table><thead><tr><th>Ano</th><th>Parcela</th><th>Em valores de hoje</th><th>% da renda</th></tr></thead><tbody>`;
+    hj.anos.forEach(a => { const i = (a - 1) * 12; t += `<tr><td>${a}</td><td>${brl(r.rows[i].total)}</td><td>${brl(hj.real[i])}</td><td>${hj.comp[i] == null ? '—' : pct(hj.comp[i], 1)}</td></tr>`; });
+    t += '</tbody></table></div>';
+    $('#hojeBody').innerHTML = resBox(brl(hj.real[last]), `é quanto vale hoje a última parcela de ${brl(r.rows[last].total)}. Somadas, as parcelas valem ${brlShort(hj.totalReal)} em dinheiro de hoje (${brlShort(hj.totalNom)} sem descontar a inflação).`)
+      + t + `<p class="note">% da renda calculado sobre ${hj.informada ? 'a renda informada' : 'a renda mínima estimada'} de ${brl(hj.renda0)}, reajustada ${pct(+S.plan.rendaReaj, 1)} ao ano.</p>`;
+  }
+  // portabilidade
+  const pt = P.port;
+  if (!pt) $('#portBody').innerHTML = '<p class="muted">Sem dados.</p>';
+  else if (pt.erro) $('#portBody').innerHTML = `<p class="muted">${pt.erro}</p>`;
+  else {
+    const menor = (+S.plan.portTaxa || 0) < (+S.taxaAA || 0);
+    $('#portBody').innerHTML = (menor ? '' : '<div class="alert warn" style="margin:0 0 10px">A nova taxa não é menor que a atual.</div>')
+      + resBox((pt.econLiq >= 0 ? 'Economia de ' : 'Prejuízo de ') + brl(Math.abs(pt.econLiq)), `trocando de banco após a parcela ${pt.m}${labelMes(pt.m) ? ' (' + labelMes(pt.m) + ')' : ''}, já descontados os custos da troca.`)
+      + `<ul class="kv"><li><span>Saldo devedor levado</span><b>${brl(pt.saldo)}</b></li>`
+      + `<li><span>Parcela seguinte</span><b>${brl(pt.old.p1)} → ${brl(pt.nov.p1)}</b></li>`
+      + `<li><span>Juros economizados</span><b>${brl(pt.econJ)}</b></li>`
+      + `<li><span>A troca se paga em</span><b>${pt.pay == null ? 'não se paga' : pt.pay === 1 && pt.custo === 0 ? 'imediatamente' : pt.pay + (pt.pay === 1 ? ' mês' : ' meses')}</b></li></ul>`
+      + '<p class="note">Compara o restante do contrato nos dois bancos, com o mesmo prazo e sem amortizações extras depois da troca.</p>';
+  }
+}
+function applyMeta(){
+  const m = R.plan && R.plan.meta; if (!m || m.mes == null) return;
+  S.rec = { valor:m.mes, cada:1, inicio:1, qtd:0 }; S.extrasOn = true; S.extraModo = 'prazo';
+  syncInputs(); update(); toast('Amortização de ' + brl(m.mes) + ' por mês aplicada');
+}
+
+/* ---------- link com a simulação ---------- */
+function stateForLink(){ const d = {}; Object.keys(DEFAULTS).forEach(k => { if (JSON.stringify(S[k]) !== JSON.stringify(DEFAULTS[k])) d[k] = S[k]; }); d.inicio = S.inicio; return d; }
+const b64e = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64d = str => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
+function linkURL(){ return location.href.split('#')[0] + '#s=' + b64e(JSON.stringify(stateForLink())); }
+function readLink(){
+  const m = /^#s=([\w-]+)/.exec(location.hash || ''); if (!m) return false;
+  try { S = normState(JSON.parse(b64d(m[1]))); } catch(e){ return 'erro'; }
+  try { history.replaceState(null, '', location.href.split('#')[0]); } catch(e){}
+  return true;
+}
+async function shareLink(){
+  const url = linkURL(), web = /^https?:$/.test(location.protocol);
+  if (web && navigator.share){ try { await navigator.share({ title:'Simulação de financiamento', text:'1ª parcela de ' + brl(R.main.p1) + '. Veja a simulação completa:', url }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  const ok = await copyText(url);
+  toast(!ok ? 'Não foi possível copiar o link' : web ? 'Link copiado' : 'Link copiado. Ele funciona quando o simulador está publicado na internet.');
+}
+
+/* ---------- glossário ---------- */
+const GLOSS = {
+  sac:['SAC e PRICE', 'No SAC a amortização é igual todo mês, então a parcela começa maior e cai com o tempo. Na PRICE a parcela é fixa: no começo ela paga mais juros e, no fim, mais amortização.'],
+  amort:['Amortização', 'A parte da parcela que reduz a dívida. O resto da parcela é juros, seguros e tarifa.'],
+  ltv:['Percentual financiado (LTV)', 'Quanto do valor do imóvel o banco financia. Cada banco define um limite máximo; o resto precisa vir da entrada.'],
+  cet:['CET (custo efetivo total)', 'A taxa que reúne juros, correção, seguros, tarifa e avaliação. É o número certo para comparar propostas de bancos diferentes: quanto menor, mais barato.'],
+  tr:['TR e IPCA', 'Índices que corrigem o saldo devedor todo mês. A TR costuma ser baixa. O IPCA acompanha a inflação: contratos com IPCA têm juros menores, mas o saldo cresce com a inflação.'],
+  mip:['Seguros MIP e DFI', 'Seguros obrigatórios. O MIP cobre morte e invalidez, é cobrado sobre o saldo devedor e depende da idade. O DFI cobre danos ao imóvel e é cobrado sobre o valor do imóvel.'],
+  fgts:['FGTS', 'O saldo do FGTS pode pagar parte da entrada e amortizar o saldo devedor a cada 2 anos, se o imóvel e você atenderem às regras do fundo.'],
+  obra:['Nas chaves ou durante a obra', 'Nas chaves: você contrata o banco na entrega, e o saldo a pagar é corrigido pelo INCC até lá. Durante a obra: o banco libera o dinheiro aos poucos e você paga juros de obra sobre o valor já liberado.'],
+  incc:['INCC', 'Índice Nacional de Custo da Construção. Corrige o saldo devido enquanto o imóvel está em obra.'],
+  rend:['Rendimento líquido', 'Quanto o investimento rende por ano depois do imposto de renda e das taxas, como um CDB ou o Tesouro Direto já descontado o IR.'],
+  itbi:['ITBI', 'Imposto municipal pago na transferência do imóvel. A alíquota depende da cidade.']
+};
+function openPop(g, btn){
+  const it = GLOSS[g]; if (!it) return;
+  $('#popT').textContent = it[0]; $('#popD').textContent = it[1];
+  const pop = $('#pop'); pop.hidden = false; pop._from = btn; $('#popClose').focus();
+}
+function closePop(){ const pop = $('#pop'); if (pop.hidden) return; pop.hidden = true; if (pop._from) try { pop._from.focus(); } catch(e){} }
+
+/* ---------- exportar / importar cenários ---------- */
+function exportCen(){
+  const list = loadCen(); if (!list.length){ toast('Nenhum cenário salvo para exportar.'); return; }
+  downloadBlob(JSON.stringify({ app:'simulador-financiamento', versao:1, cenarios:list.map(c => ({ letra:c.letra, state:c.state })) }, null, 2), 'application/json', 'cenarios-financiamento.json');
+  toast('Cenários exportados');
+}
+function importCen(file){
+  const rd = new FileReader(), keep = S;
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result), arr = Array.isArray(d) ? d : d && d.cenarios;
+      if (!Array.isArray(arr)) throw new Error('formato');
+      const list = loadCen(); let add = 0;
+      arr.forEach(c => {
+        if (list.length >= MAX_CENARIOS || !c || typeof c.state !== 'object') return;
+        const st = normState(c.state), used = list.map(x => x.letra);
+        S = st; compute(); const res = snapshot(); S = keep;
+        list.push({ id:Date.now() + add, letra:['A','B','C','D'].find(l => !used.includes(l)), state:st, res }); add++;
+      });
+      S = keep; compute();
+      list.sort((a, b) => a.letra.localeCompare(b.letra)); lsSet(LS_CEN, list); renderCen();
+      toast(add ? add + (add === 1 ? ' cenário importado' : ' cenários importados') : 'Nenhum cenário importado. O limite é de ' + MAX_CENARIOS + '.');
+    } catch(e){ S = keep; compute(); toast('Arquivo inválido. Use um arquivo exportado pelo simulador.'); }
+  };
+  rd.readAsText(file);
+}
+
 /* ---------- abas ---------- */
 const TABS = [
   { id:'dados', nome:'Dados', icon:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>' },
   { id:'resumo', nome:'Resumo', icon:'<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>' },
   { id:'graficos', nome:'Gráficos', icon:'<path d="M4 4v16h16"/><path d="m7.5 14.5 3.5-4 3 2.5 5-6"/>' },
   { id:'comparar', nome:'Comparar', icon:'<rect x="4" y="9" width="5" height="11" rx="1"/><rect x="15" y="4" width="5" height="16" rx="1"/><path d="M10.5 6.5h3"/>' },
+  { id:'planejar', nome:'Planejar', icon:'<path d="M5.5 21V4"/><path d="M5.5 4.5h11l-2.2 4 2.2 4h-11"/>' },
   { id:'tabela', nome:'Tabela', icon:'<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M3.5 15h17M9.5 4.5v15"/>' }
 ];
 let TAB = (() => { try { return localStorage.getItem(LS_TAB) || 'resumo'; } catch(e){ return 'resumo'; } })();
@@ -1634,8 +2110,23 @@ function renderControls(){
   $('#taxaSuf').textContent = S.taxaUnit === 'aa' ? '% a.a.' : '% a.m.';
   const iM = taxaMensal(S.taxaAA / 100) * 100;
   $('#taxaHint').textContent = S.taxaUnit === 'aa' ? pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m. (taxa equivalente)' : pct(iM, 4) + ' a.m. ≈ ' + pct(S.taxaAA) + ' a.a. (taxa equivalente)';
-  $('#trBox').hidden = !S.tr; $('#trTag').hidden = !S.tr;
-  $('#trHint').textContent = '≈ ' + pct(taxaMensal((+S.trAA || 0) / 100) * 100, 4) + ' a.m.';
+  setSeg('#indiceSeg', S.indice); setSeg('#segModoSeg', S.segModo); setSeg('#plantaModoSeg', S.planta.modo);
+  $('#trBox').hidden = !idxOn(); $('#trTag').hidden = !idxOn(); $('#trTag').textContent = idxNome();
+  $('#idxLbl').textContent = idxNome() + ' anual estimada';
+  $('#trHint').textContent = '≈ ' + pct(taxaMensal(idxAA() / 100) * 100, 4) + ' a.m.';
+  $('#segPctBox').hidden = S.segModo !== 'pct'; $('#segFixoBox').hidden = S.segModo !== 'fixo';
+  const sp = segParams(S), s1 = R.main.rows[0];
+  $('#segPctHint').textContent = s1 && (sp.seg > 0 || sp.segSaldo > 0) ? `No 1º mês: MIP ${brl(s1.seg - sp.seg)} + DFI ${brl(sp.seg)}.` : '';
+  $('#fgtsBox').hidden = !S.fgts.on;
+  $$('.fgtsTeto').forEach(el => el.textContent = brlShort(FGTS_TETO));
+  const fAl = $('#fgtsAlert'), acima = S.fgts.on && S.valor > FGTS_TETO;
+  fAl.hidden = !acima; if (acima) fAl.textContent = `Pela regra atual, o FGTS só pode ser usado em imóveis de até ${brl(FGTS_TETO)}. Ele não foi considerado nesta simulação.`;
+  const fx = fgtsExtras(S.prazo, S), usos = [];
+  for (let k = 1; k <= S.prazo && usos.length < 2; k++) if (fx[k] > 0) usos.push(`${brl(fx[k])} na parcela ${k}${labelMes(k) ? ' (' + labelMes(k) + ')' : ''}`);
+  $('#fgtsHint').textContent = !fgtsAtivo() ? '' : [R.fgtsEntrada > 0 ? `${brl(R.fgtsEntrada)} vão para a entrada.` : '', S.fgts.amortizar && usos.length ? `Amortizações: ${usos.join(', depois ')} e assim por diante, a cada 2 anos.` : ''].filter(Boolean).join(' ');
+  $('#plantaBox').hidden = !S.planta.on; $('#inccField').hidden = S.planta.modo !== 'chaves';
+  $('#plantaModoHint').textContent = S.planta.modo === 'chaves' ? 'O saldo é corrigido pelo INCC até a entrega; o financiamento começa nas chaves.' : 'Você paga juros sobre o valor que o banco já liberou à construtora até a entrega.';
+  $('#inicioHint').textContent = S.planta.on ? 'Com imóvel na planta, informe o mês da 1ª parcela depois das chaves.' : '';
   $('#modoHint').textContent = S.extraModo === 'prazo'
     ? (sistemaPrim() === 'SAC' ? 'Mantém a amortização mensal e encurta o contrato.' : 'Mantém a prestação e encurta o contrato.')
     : 'Mantém o prazo e recalcula parcelas menores.';
@@ -1653,10 +2144,11 @@ function renderPontuais(){
 }
 
 const FIELDS = {
-  valor:'money', ltvMax:'pct', trAA:'pct', mip:'money', dfi:'money', tarifa:'money', renda:'money',
+  valor:'money', ltvMax:'pct', mip:'money', dfi:'money', tarifa:'money', renda:'money', mipPct:'pct4', dfiPct:'pct4',
   itbi:'pct', registro:'money', avaliacao:'money', outras:'money'
 };
-function fmtFor(type, v){ return type === 'money' ? moneyIn(v) : smart(+v || 0, 2); }
+function fmtFor(type, v){ return type === 'money' ? moneyIn(v) : type === 'int' ? String(Math.round(+v || 0)) : smart(+v || 0, type === 'pct4' ? 4 : 2); }
+const NESTED = { fgtsSaldo:['fgts','saldo','money'], fgtsMensal:['fgts','mensal','money'], plantaMeses:['planta','meses','int'], plantaIncc:['planta','incc','pct'] };
 function setVal(id, v){ const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = v; }
 function syncInputs(){
   Object.keys(FIELDS).forEach(k => setVal(k, fmtFor(FIELDS[k], S[k])));
@@ -1667,7 +2159,11 @@ function syncInputs(){
   setVal('taxa', S.taxaUnit === 'aa' ? smart(S.taxaAA, 2) : smart(taxaMensal(S.taxaAA / 100) * 100, 4));
   setVal('prazoNum', S.prazo); $('#prazoRange').value = S.prazo;
   setVal('inicio', S.inicio);
-  $('#trOn').checked = !!S.tr; $('#extrasOn').checked = !!S.extrasOn;
+  $('#extrasOn').checked = !!S.extrasOn;
+  setVal('idxAA', smart(S.indice === 'ipca' ? S.ipcaAA : S.trAA, 2));
+  Object.keys(NESTED).forEach(id => { const [o, k, t] = NESTED[id]; setVal(id, fmtFor(t, S[o][k])); });
+  $('#fgtsOn').checked = S.fgts.on; $('#fgtsEntrada').checked = S.fgts.entrada; $('#fgtsAmort').checked = S.fgts.amortizar; $('#plantaOn').checked = S.planta.on;
+  $$('[data-p]').forEach(el => { if (document.activeElement !== el) el.value = fmtFor(el.dataset.t, S.plan[el.dataset.p]); });
   $('#comp').value = S.comp;
   setVal('recValor', moneyIn(S.rec.valor)); setVal('recCada', S.rec.cada); setVal('recInicio', S.rec.inicio); setVal('recQtd', S.rec.qtd);
   renderPontuais();
@@ -1678,8 +2174,8 @@ let raf = 0;
 function update(){ cancelAnimationFrame(raf); raf = requestAnimationFrame(run); }
 function run(){
   compute();
-  renderControls(); renderLTV(); renderHero(); renderTiles(); renderExtrasRes(); renderCusto(); renderRenda(); renderCompra();
-  renderPrazos(); renderVS(); renderEntrada(); renderTaxa(); renderLeads(); renderTable(); renderCen(); renderResumo();
+  renderControls(); renderLTV(); renderHero(); renderTiles(); renderExtrasRes(); renderObra(); renderCusto(); renderRenda(); renderCompra();
+  renderPrazos(); renderVS(); renderEntrada(); renderTaxa(); renderLeads(); renderPlan(); renderTable(); renderCen(); renderResumo();
   paintAll();
   lsSet(LS_STATE, S);
 }
@@ -1726,7 +2222,29 @@ onNum('prazoNum', v => { S.prazo = Math.max(1, Math.min(420, v || 1)); $('#prazo
 $('#prazoNum').addEventListener('blur', e => { e.target.value = S.prazo; });
 $('#prazoRange').addEventListener('input', e => { S.prazo = +e.target.value; setVal('prazoNum', S.prazo); update(); });
 $('#inicio').addEventListener('change', e => { S.inicio = e.target.value || nextMonthStr(); update(); });
-$('#trOn').addEventListener('change', e => { S.tr = e.target.checked; update(); });
+const segClick = (sel, fn) => $(sel).addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; fn(b.dataset.v); syncInputs(); update(); });
+segClick('#indiceSeg', v => { S.indice = v; });
+segClick('#segModoSeg', v => { S.segModo = v; });
+segClick('#plantaModoSeg', v => { S.planta.modo = v; });
+onNum('idxAA', v => { v = Math.max(0, v); if (S.indice === 'ipca') S.ipcaAA = v; else S.trAA = v; });
+$('#idxAA').addEventListener('blur', e => { e.target.value = smart(S.indice === 'ipca' ? S.ipcaAA : S.trAA, 2); });
+Object.keys(NESTED).forEach(id => {
+  const [o, k, t] = NESTED[id];
+  onNum(id, v => { S[o][k] = Math.max(0, v); }, t === 'int' ? 'int' : undefined);
+  $('#' + id).addEventListener('blur', e => { e.target.value = fmtFor(t, S[o][k]); });
+});
+[['fgtsOn','fgts','on'], ['fgtsEntrada','fgts','entrada'], ['fgtsAmort','fgts','amortizar'], ['plantaOn','planta','on']].forEach(([id, o, k]) =>
+  $('#' + id).addEventListener('change', e => { S[o][k] = e.target.checked; update(); }));
+$('#tab-planejar').addEventListener('input', e => {
+  const el = e.target.closest('[data-p]'); if (!el) return;
+  const v = el.dataset.t === 'int' ? parseInt(el.value.replace(/\D/g, ''), 10) : parseBR(el.value);
+  S.plan[el.dataset.p] = Math.max(0, isFinite(v) ? v : 0);
+  $$('[data-p="' + el.dataset.p + '"]').forEach(o => { if (o !== el) o.value = fmtFor(o.dataset.t, S.plan[el.dataset.p]); });
+  update();
+});
+$('#tab-planejar').addEventListener('focusout', e => { const el = e.target.closest('[data-p]'); if (el) el.value = fmtFor(el.dataset.t, S.plan[el.dataset.p]); });
+$('#tab-planejar').addEventListener('focusin', e => { const el = e.target.closest('[data-p]'); if (el) try { el.select(); } catch(x){} });
+$('#tab-planejar').addEventListener('click', e => { if (e.target.closest('#btnMetaAplicar')) applyMeta(); });
 $('#comp').addEventListener('input', e => { S.comp = +e.target.value; update(); });
 
 $('#extrasOn').addEventListener('change', e => { S.extrasOn = e.target.checked; update(); });
@@ -1782,7 +2300,23 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#relMo
 $('#relPrint').addEventListener('click', () => { const w = $('#relFrame').contentWindow; try { w.focus(); w.print(); } catch(e){ toast('Use “Abrir em nova aba” para imprimir.'); } });
 $('#relDown').addEventListener('click', () => { downloadBlob(relHTML, 'text/html;charset=utf-8', relName()); toast('Relatório baixado'); });
 $('#relOpen').addEventListener('click', () => { const u = URL.createObjectURL(new Blob([relHTML], { type:'text/html;charset=utf-8' })); const w = window.open(u, '_blank'); if (!w) toast('Permita pop-ups ou use “Baixar”.'); setTimeout(() => URL.revokeObjectURL(u), 60000); });
-$('#btnShare').addEventListener('click', share); $('#btnShareTop').addEventListener('click', share);
+$('#btnShare').addEventListener('click', share); $('#btnShareTop').addEventListener('click', shareLink);
+$('#btnCopyLink').addEventListener('click', shareLink);
+$('#btnExpCen').addEventListener('click', exportCen);
+$('#btnImpCen').addEventListener('click', () => $('#impFile').click());
+$('#impFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) importCen(f); e.target.value = ''; });
+document.addEventListener('click', e => {
+  const q = e.target.closest('.q'); if (q){ e.preventDefault(); e.stopPropagation(); openPop(q.dataset.g, q); return; }
+  if (!$('#pop').hidden && !e.target.closest('#pop')) closePop();
+}, true);
+$('#popClose').addEventListener('click', closePop);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePop(); });
+$('#glossList').innerHTML = Object.keys(GLOSS).map(k => `<div><dt>${GLOSS[k][0]}</dt><dd>${GLOSS[k][1]}</dd></div>`).join('');
+/* PWA: instalação e uso offline (só quando publicado em http/https) */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#btnInstall').hidden = false; $('#installHint').hidden = true; });
+$('#btnInstall').addEventListener('click', async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch(e){} installEvt = null; $('#btnInstall').hidden = true; });
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 $('#btnCopy').addEventListener('click', async () => toast(await copyText(resumoTexto()) ? 'Resumo copiado' : 'Não foi possível copiar'));
 $('#btnImg').addEventListener('click', saveImage);
 const doReset = () => { if (!confirm('Restaurar os valores iniciais? Os cenários salvos são mantidos.')) return; S = normState(null); evoMetric = 'total'; syncInputs(); update(); toast('Valores restaurados'); };
@@ -1798,7 +2332,12 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(paintAll);
 mount('cvHero', specHero); mount('cvEvo', specEvo); mount('cvAnual', specAnual); mount('cvPat', specPat);
 mount('cvAcum', specAcum); mount('cvDonut', specDonut); mount('cvVS', specVS);
 mount('cvPrazoP', () => specPrazo('p1')); mount('cvPrazoJ', () => specPrazo('juros'));
+mount('cvInvest', specInvest); mount('cvAluga', specAluga); mount('cvHoje', specHoje);
+const fromLink = readLink();
+if (fromLink === true) TAB = 'resumo';
 buildNav(); syncInputs(); applyTab(); run();
+if (fromLink === true) toast('Simulação aberta pelo link');
+else if (fromLink === 'erro') toast('O link da simulação está incompleto.');
 })();
 </script>
 </body>
