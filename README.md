@@ -14,7 +14,7 @@ Simulador mobile first em um único arquivo HTML: SAC x PRICE, TR, seguros, amor
 - Correção pela TR ou pelo IPCA, seguros MIP/DFI em percentual (como os bancos cobram) ou valor fixo, tarifa
 - **CET (custo efetivo total)**, para comparar bancos
 - **FGTS** na entrada e em amortizações a cada 2 anos (regras atuais, editáveis no código)
-- **Imóvel na planta**: correção pelo INCC até as chaves ou juros de obra
+- **Imóvel na planta**: correção pelo INCC até as chaves ou juros de obra, e os pagamentos à construtora (sinal, mensais, intermediárias e chaves) corrigidos pelo INCC, com gráfico mês a mês
 - **Amortizações extras** pontuais ou recorrentes (ex.: 13º todo ano), reduzindo **prazo** ou **parcela**, com a economia de juros calculada
 - Renda mínima estimada, comparador de prazos, impacto de entrada e de taxa
 - Interface em abas (Dados, Resumo, Gráficos, Comparar, Planejar, Tabela), com barra inferior no celular

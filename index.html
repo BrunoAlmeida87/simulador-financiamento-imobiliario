@@ -219,6 +219,7 @@ details.grp>summary .tag{margin-left:8px}
 .row2.even{grid-template-columns:repeat(2,minmax(0,1fr))}
 .row3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px;align-items:end}
 .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+.inp:has(input:disabled),input[type=range]:disabled{opacity:.55}
 input[type=range]{width:100%;accent-color:var(--ink);height:28px;margin:8px 0 0}
 input[type=month]{color-scheme:inherit}
 .check{display:flex;align-items:center;gap:12px;min-height:40px;font-weight:600;cursor:pointer}
@@ -520,6 +521,7 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
         <div class="inp"><input id="entradaPct" inputmode="decimal" autocomplete="off" aria-label="Entrada em percentual"><em>%</em></div>
       </div>
       <input type="range" id="entradaRange" min="0" max="100" step="0.5" aria-label="Percentual de entrada">
+      <div class="hint" id="entradaHint" hidden></div>
     </div>
     <div class="readouts">
       <div class="ro main"><span>Valor financiado</span><b id="finOut">—</b></div>
@@ -637,6 +639,18 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
         <div class="seg" id="plantaModoSeg"><button type="button" data-v="chaves">Nas chaves</button><button type="button" data-v="obra">Durante a obra</button></div>
         <div class="hint" id="plantaModoHint"></div></div>
       <label class="field" id="inccField"><span class="lbl">INCC estimado <button class="q" type="button" data-g="incc" aria-label="O que é isso?">?</button></span><div class="inp"><input id="plantaIncc" inputmode="decimal"><em>% a.a.</em></div></label>
+      <label class="check"><input type="checkbox" id="plantaFluxo"> Informar os pagamentos à construtora <button class="q" type="button" data-g="fluxo" aria-label="O que é isso?">?</button></label>
+      <div id="fluxoBox" hidden>
+        <div class="row3 mt-s">
+          <label class="field"><span class="lbl">Sinal, no ato</span><div class="inp sm"><em>R$</em><input id="plantaSinal" inputmode="decimal" autocomplete="off" placeholder="0"></div></label>
+          <label class="field"><span class="lbl">Mensais da obra</span><div class="inp sm"><em>R$</em><input id="plantaMensal" inputmode="decimal" autocomplete="off" placeholder="0"></div></label>
+          <label class="field"><span class="lbl">Intermediárias</span><div class="inp sm"><em>R$</em><input id="plantaBalao" inputmode="decimal" autocomplete="off" placeholder="0"></div></label>
+          <label class="field"><span class="lbl">A cada</span><div class="inp sm"><input id="plantaBalaoCada" inputmode="numeric" autocomplete="off"><em>meses</em></div></label>
+        </div>
+        <label class="field"><span class="lbl">Na entrega das chaves (dinheiro próprio)</span><div class="inp"><em>R$</em><input id="plantaChavesPag" inputmode="decimal" autocomplete="off" placeholder="0"></div></label>
+        <div class="hint" id="fluxoHint"></div>
+        <p class="note">Use os valores da tabela da construtora, sem correção. A soma vira a entrada; o que faltar é financiado pelo banco nas chaves.</p>
+      </div>
     </div>
   </details>
 
@@ -683,6 +697,12 @@ footer.foot{padding:8px 16px 26px;font-size:12.5px;color:var(--muted);line-heigh
     <article class="panel" id="obraRes" hidden>
       <h2>Fase de obra</h2>
       <div id="obraBody"></div>
+      <div id="obraFig" hidden>
+        <p class="lead mt-m" id="obraLead"></p>
+        <div class="chart"><canvas id="cvObra" aria-label="Pagamentos mês a mês até as chaves"></canvas><div class="tip" hidden></div></div>
+        <div class="legend" id="cvObraLeg"></div>
+      </div>
+      <div id="obraList"></div>
     </article>
 
     <div class="grid2">
@@ -1001,15 +1021,15 @@ const FONT = '"Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto,
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-function nextMonthStr(){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function nextMonthStr(add){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1 + (add || 0)); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
 const DEFAULTS = {
   valor:1600000, entrada:400000, banco:'caixa', customTaxa:10.99, taxaAA:10.99, taxaUnit:'aa', taxaAuto:true,
-  sistema:'SAC', prazo:360, indice:'nenhum', trAA:1.5, ipcaAA:4, comp:30, ltvMax:80, renda:0,
+  sistema:'SAC', prazo:360, indice:'nenhum', trAA:2, ipcaAA:4, comp:30, ltvMax:80, renda:0,
   segModo:'pct', mipPct:0, dfiPct:0, mip:0, dfi:0, tarifa:0,
   itbi:3, registro:0, avaliacao:0, outras:0, inicio:nextMonthStr(),
   extrasOn:true, extraModo:'prazo', pontuais:[], rec:{ valor:0, cada:12, inicio:12, qtd:0 },
   fgts:{ on:false, saldo:0, mensal:0, entrada:false, amortizar:true },
-  planta:{ on:false, meses:24, modo:'chaves', incc:5 },
+  planta:{ on:false, meses:24, modo:'chaves', incc:5, fluxo:false, sinal:0, mensal:0, balao:0, balaoCada:6, chavesPag:0 },
   plan:{ metaAnos:15, extraMes:1000, rend:9, aluguel:6400, aluguelReaj:4, valoriz:4, inflacao:4, rendaReaj:4, portMes:60, portTaxa:9.99, portCusto:0 }
 };
 const ENUMS = { sistema:['SAC','PRICE','COMP'], taxaUnit:['aa','am'], extraModo:['prazo','parcela'], indice:['nenhum','tr','ipca'], segModo:['pct','fixo'], banco:BANCOS.map(b => b.id) };
@@ -1102,17 +1122,36 @@ function fgtsExtras(n, st){
   return ex;
 }
 /* Imóvel na planta: 'chaves' corrige o valor a financiar pelo INCC até a entrega;
-   'obra' cobra juros sobre o valor já liberado pelo banco (liberação linear) até as chaves. */
-function obraCalc(st, pv0){
+   'obra' cobra juros sobre o valor já liberado pelo banco (liberação linear) até as chaves.
+   Pagamentos à construtora (fluxo): sinal no ato; mensais nos meses 1..N; intermediárias a cada
+   balaoCada meses; parcela nas chaves no mês N. Valores do contrato, corrigidos pelo INCC até o
+   mês do pagamento. A soma sem correção é a entrada (o saldo que sobra vai para o banco). */
+const fluxoOn = st => { st = st || S; return !!(st.planta.on && st.planta.fluxo && Math.round(+st.planta.meses || 0) >= 1); };
+const balaoCada = p => Math.max(1, Math.round(+p.balaoCada || 1));
+function fluxoNominal(st){
   const p = st.planta, N = Math.round(+p.meses || 0);
-  if (!p.on || N < 1 || pv0 <= 0) return { on:false, pvEff:pv0, juros:0, inccAdd:0, n:0 };
-  if (p.modo === 'obra'){
-    const iM = taxaMensal((+st.taxaAA || 0) / 100), rows = [];
-    for (let j = 1; j <= N; j++){ const lib = pv0 * j / N; rows.push({ j, lib, juros:lib * iM }); }
-    return { on:true, modo:'obra', n:N, pvEff:pv0, inccAdd:0, rows, juros:rows.reduce((a, r) => a + r.juros, 0), p1:rows[0].juros, pN:rows[N - 1].juros };
+  return Math.max(0, +p.sinal || 0) + Math.max(0, +p.mensal || 0) * N + Math.max(0, +p.balao || 0) * Math.floor(N / balaoCada(p)) + Math.max(0, +p.chavesPag || 0);
+}
+function obraCalc(st, pv0){
+  const p = st.planta, N = Math.round(+p.meses || 0), fl = fluxoOn(st);
+  if (!p.on || N < 1 || (pv0 <= 0 && !fl)) return { on:false, pvEff:pv0, juros:0, inccAdd:0, inccPag:0, n:0 };
+  const obra = p.modo === 'obra', fM = 1 + taxaMensal((+p.incc || 0) / 100), iM = taxaMensal((+st.taxaAA || 0) / 100), c = balaoCada(p);
+  const sinal = fl ? Math.max(0, +p.sinal || 0) : 0, rows = [];
+  let nominal = sinal, pago = sinal, juros = 0;
+  for (let j = 1; j <= N; j++){
+    let base = 0; const tipo = [];
+    if (fl){
+      base += Math.max(0, +p.mensal || 0);
+      if (p.balao > 0 && j % c === 0){ base += +p.balao; tipo.push('intermediária'); }
+      if (j === N && p.chavesPag > 0){ base += +p.chavesPag; tipo.push('chaves'); }
+    }
+    const corr = base * (Math.pow(fM, j) - 1), jr = obra && pv0 > 0 ? pv0 * j / N * iM : 0;
+    rows.push({ j, base, corr, juros:jr, total:base + corr + jr, tipo });
+    nominal += base; pago += base + corr; juros += jr;
   }
-  const f = Math.pow(1 + taxaMensal((+p.incc || 0) / 100), N);
-  return { on:true, modo:'chaves', n:N, pvEff:pv0 * f, inccAdd:pv0 * (f - 1), juros:0 };
+  const pvEff = obra ? pv0 : pv0 * Math.pow(fM, N);
+  return { on:true, modo:obra ? 'obra' : 'chaves', n:N, rows, pvEff, inccAdd:pvEff - pv0, juros, p1:rows[0].juros, pN:rows[N - 1].juros,
+    fluxo:fl, sinal, nominal, pago, inccPag:pago - nominal, nBal:fl && p.balao > 0 ? Math.floor(N / c) : 0 };
 }
 function segParams(st){
   return st.segModo === 'pct'
@@ -1167,6 +1206,7 @@ const totBanco = r => r.totalPago + (R.obra && R.obra.on ? R.obra.juros : 0);
 let R = {};
 function compute(){
   R.prazos = null; R.plan = null;
+  if (fluxoOn()) S.entrada = Math.round(fluxoNominal(S) * 100) / 100;   // com pagamentos à construtora, a entrada é a soma deles
   R.pv = Math.max(0, S.valor - S.entrada);
   R.entradaPct = S.valor > 0 ? S.entrada / S.valor * 100 : 0;
   R.ltv = S.valor > 0 ? R.pv / S.valor * 100 : 0;
@@ -1175,6 +1215,7 @@ function compute(){
   R.price = sim({ sistemaCalc:'PRICE' });
   R.main = sistemaPrim() === 'SAC' ? R.sac : R.price;
   R.base = sim({ extrasOn:false, noFgts:true });
+  R.priceFixa = idxOn() ? sim({ indice:'nenhum', sistemaCalc:'PRICE' }) : null;   // PRICE sem correção, para mostrar o efeito da TR/IPCA
   R.hasExtras = R.main.extras > 0 || R.sac.extras > 0 || R.price.extras > 0;
   R.renda = R.main.p1 != null ? R.main.p1 / (S.comp / 100) : null;
   R.ann = annual(R.main);
@@ -1480,19 +1521,34 @@ function specPrazo(key){
       rows:[['1ª parcela', brl(o.r.p1)], ['Juros totais', brl(o.r.juros)], ['Total pago', brl(o.r.totalPago)]] })),
     h:() => l.length * 36 + 4 };
 }
+function specObra(){
+  const o = R.obra; if (!o || !o.on || !o.rows) return { empty:'Sem dados', h:() => 160 };
+  const st = [];
+  if (o.fluxo){ st.push({ label:'Construtora', color:'entrada', vals:o.rows.map(r => r.base) }); st.push({ label:'Correção INCC', color:'tr', vals:o.rows.map(r => r.corr) }); }
+  if (o.modo === 'obra') st.push({ label:'Juros de obra', color:'juros', vals:o.rows.map(r => r.juros) });
+  const stacks = st.filter(s => s.vals.some(v => v > 0.005));
+  if (!stacks.length) return { empty:'Sem pagamentos durante a obra', h:() => 120 };
+  return { type:'stack', cats:o.rows.map(r => String(r.j)), stacks, yFmt:brlAxis, tipFmt:money,
+    tipTitle:ci => { const r = o.rows[ci], d = labelMes(r.j - o.n); return 'Mês ' + r.j + ' da obra' + (d ? ' · ' + d : '') + (r.tipo.length ? ' · ' + r.tipo.join(' e ') : ''); },
+    h:W => Math.min(280, Math.max(190, W * 0.46)) };
+}
 
 /* ---------- renderização ---------- */
 function vOrQuit(v, r){ return v == null ? (r.n < r.nContratado ? 'quitado' : '—') : brl(v); }
 function heroSentence(){
   const m = R.main, sys = sistemaPrim(), corr = idxOn() ? ', corrigida pela ' + idxNome() : '';
-  if (S.sistema === 'COMP') return `No SAC a parcela começa maior e cai até ${brl(R.sac.last)}; no PRICE ela fica em torno de ${brl(R.price.p1)}${corr}.`;
+  const o = R.obra;
+  const obraTxt = !o.on ? '' : o.fluxo
+    ? `. Até as chaves, você paga ${brl(o.pago)} à construtora, já com o INCC` + (o.modo === 'obra' ? `, e ${brl(o.juros)} de juros de obra ao banco` : `, e financia ${brl(o.pvEff)} nas chaves`)
+    : o.modo === 'obra' ? `. Antes, durante a obra, você paga juros de obra de ${brl(o.p1)} a ${brl(o.pN)} por mês` : `. Até as chaves, o valor a financiar é corrigido pelo INCC`;
+  if (S.sistema === 'COMP') return `No SAC a parcela começa maior e cai até ${brl(R.sac.last)}; no PRICE ${idxOn() ? `ela começa em ${brl(R.price.p1)} e sobe${corr} até ${brl(R.price.last)}` : `ela fica em torno de ${brl(R.price.p1)}`}` + obraTxt + '.';
   let s;
   if (sys === 'SAC') s = `Cai todo mês até ${brl(m.last)} na última parcela`;
   else if (!idxOn() && !(m.extras > 0 && S.extraModo === 'parcela')) s = `Fica fixa durante as ${m.n} parcelas`;
+  else if (idxOn()) s = `Sobe com a correção do saldo pela ${idxNome()} e termina em ${brl(m.last)}; sem correção, ficaria em torno de ${brl(R.priceFixa.p1)} do início ao fim`;
   else s = `Varia ao longo do contrato e termina em ${brl(m.last)}`;
   if (m.extras > 0 && S.extraModo === 'prazo') s += `, e com as amortizações ${R.fgtsAmort > 0 ? 'e o FGTS ' : 'extras '}você quita em ${fmtPrazo(m.n)} (${m.n} parcelas)`;
-  if (R.obra.on) s += R.obra.modo === 'obra' ? `. Antes, durante a obra, você paga juros de obra de ${brl(R.obra.p1)} a ${brl(R.obra.pN)} por mês` : `. Até as chaves, o valor a financiar é corrigido pelo INCC`;
-  return s + '.';
+  return s + obraTxt + '.';
 }
 function renderHero(){
   $('#heroTag').textContent = sistemaLabel();
@@ -1559,7 +1615,33 @@ function renderExtrasRes(){
 function renderObra(){
   const o = R.obra; $('#obraRes').hidden = !o.on;
   if (!o.on) return;
+  $('#obraFig').hidden = !(o.fluxo || o.modo === 'obra');
+  $('#obraLead').textContent = o.fluxo ? 'Quanto sai do seu bolso em cada mês até as chaves.' + (o.sinal > 0 ? ` O sinal de ${brl(o.sinal)}, pago no ato, não aparece no gráfico.` : '') : 'Juros de obra pagos ao banco em cada mês até as chaves.';
   let h = '<div class="stat-grid">';
+  if (o.fluxo){
+    const p = S.planta, big = o.rows.reduce((a, r) => r.total > a.total ? r : a, o.rows[0]);
+    const fM = 1 + taxaMensal((+p.incc || 0) / 100);
+    h += `<div class="stat hl"><span>Pago à construtora até as chaves</span><b>${brl(o.pago)}</b><em>contrato ${brlShort(o.nominal)} + INCC ${brlShort(o.inccPag)}</em></div>`;
+    if (p.mensal > 0) h += `<div class="stat"><span>Mensal da obra</span><b>${brl(p.mensal * fM)}</b><em>sobe até ${brl(p.mensal * Math.pow(fM, o.n))} com o INCC</em></div>`;
+    h += `<div class="stat"><span>Maior mês</span><b>${brl(big.total)}</b><em>mês ${big.j}${labelMes(big.j - o.n) ? ', ' + labelMes(big.j - o.n) : ''}${big.tipo.length ? ' (' + big.tipo.join(' e ') + ')' : ''}</em></div>`;
+    h += o.modo === 'obra'
+      ? `<div class="stat"><span>Juros de obra ao banco</span><b>${brl(o.juros)}</b><em>de ${brl(o.p1)} a ${brl(o.pN)} por mês</em></div>`
+      : `<div class="stat"><span>Saldo financiado nas chaves</span><b>${brl(o.pvEff)}</b><em>hoje ${brlShort(R.pv)} + INCC ${brlShort(o.inccAdd)}</em></div>`;
+    h += '</div>';
+    const li = (a, b) => `<li><span>${a}</span><b>${b}</b></li>`;
+    $('#obraBody').innerHTML = h;
+    $('#obraList').innerHTML = '<ul class="kv mt-m">'
+      + (o.sinal > 0 ? li('Sinal, no ato', brl(o.sinal)) : '')
+      + (p.mensal > 0 ? li(`Mensais (${o.n} × ${brl(p.mensal)})`, brl(p.mensal * o.n)) : '')
+      + (o.nBal > 0 ? li(`Intermediárias (${o.nBal} × ${brl(p.balao)}, a cada ${balaoCada(p)} meses)`, brl(p.balao * o.nBal)) : '')
+      + (p.chavesPag > 0 ? li('Na entrega das chaves', brl(p.chavesPag)) : '')
+      + `<li class="tot"><span>Total do contrato (a entrada)</span><b>${brl(o.nominal)}</b></li>`
+      + li(`Correção pelo INCC (${pct(p.incc, 1)} a.a.)`, brl(o.inccPag))
+      + `<li class="tot"><span>Total pago à construtora</span><b>${brl(o.pago)}</b></li></ul>`
+      + `<p class="note">Valores do contrato, corrigidos pelo INCC até o mês de cada pagamento. ${o.modo === 'obra' ? 'O banco financia o restante desde a assinatura e cobra juros de obra até as chaves.' : `O saldo que falta (${brl(R.pv)} hoje) também é corrigido pelo INCC e financiado pelo banco nas chaves.`} A 1ª parcela do financiamento${labelMes(1) ? ' é em ' + labelMes(1) : ' vem depois das chaves'}.</p>`;
+    return;
+  }
+  $('#obraList').innerHTML = '';
   if (o.modo === 'obra'){
     h += `<div class="stat"><span>Juros de obra no 1º mês</span><b>${brl(o.p1)}</b><em>sobem até ${brl(o.pN)} no último mês</em></div>`;
     h += `<div class="stat"><span>Total de juros de obra</span><b>${brl(o.juros)}</b><em>em ${o.n} meses</em></div></div>`;
@@ -1567,16 +1649,16 @@ function renderObra(){
   } else {
     h += `<div class="stat"><span>Saldo a financiar nas chaves</span><b>${brl(o.pvEff)}</b><em>hoje: ${brl(R.pv)}</em></div>`;
     h += `<div class="stat"><span>Correção pelo INCC</span><b>${brl(o.inccAdd)}</b><em>${pct(S.planta.incc, 1)} a.a. por ${o.n} meses</em></div></div>`;
-    h += `<p class="note">Até as chaves, o saldo a pagar é corrigido pelo INCC. O financiamento começa depois, sobre o valor corrigido${labelMes(1) ? ', com a 1ª parcela em ' + labelMes(1) : ''}.</p>`;
+    h += `<p class="note">Até as chaves, o saldo a pagar é corrigido pelo INCC. O financiamento começa depois, sobre o valor corrigido${labelMes(1) ? ', com a 1ª parcela em ' + labelMes(1) : ''}. Para incluir sinal, mensais e intermediárias pagos à construtora, marque "Informar os pagamentos à construtora" em Imóvel na planta.</p>`;
   }
   $('#obraBody').innerHTML = h;
 }
 function custoItens(){
   const r = R.main, th = curTheme(), o = R.obra;
   return [
-    ['Entrada', S.entrada, 'entrada'], ['Custos da compra', R.cc.total, 'custos'], ['Valor financiado', R.pv, 'amort'],
+    [o.fluxo ? 'Entrada (construtora)' : 'Entrada', S.entrada, 'entrada'], ['Custos da compra', R.cc.total, 'custos'], ['Valor financiado', R.pv, 'amort'],
     [o.on && o.juros ? 'Juros (inclui obra)' : 'Juros', r.juros + (o.on ? o.juros : 0), 'juros'],
-    [o.on && o.inccAdd ? 'Correção (' + [idxOn() ? idxNome() : '', 'INCC'].filter(Boolean).join(' e ') + ')' : 'Correção ' + idxNome(), r.corr + (o.on ? o.inccAdd : 0), 'tr'],
+    [o.on && (o.inccAdd || o.inccPag) ? 'Correção (' + [idxOn() ? idxNome() : '', 'INCC'].filter(Boolean).join(' e ') + ')' : 'Correção ' + idxNome(), r.corr + (o.on ? o.inccAdd + o.inccPag : 0), 'tr'],
     ['Seguros e tarifa', r.custos, 'seg']
   ].filter(x => x[1] > 0.005).map(x => ({ label:x[0], value:x[1], role:x[2], c:col(th, x[2]) }));
 }
@@ -1602,9 +1684,9 @@ function renderRenda(){
   $('#rendaBody').innerHTML = h;
 }
 function renderCompra(){
-  const tot = S.entrada + R.cc.total;
+  const o = R.obra, incc = o.fluxo ? o.inccPag : 0, tot = S.entrada + incc + R.cc.total;
   $('#compraBody').innerHTML = '<ul class="kv">'
-    + `<li><span>Entrada</span><b>${brl(S.entrada)}</b></li>`
+    + (o.fluxo ? `<li><span>Pagamentos à construtora</span><b>${brl(S.entrada)}</b></li><li><span>Correção pelo INCC até as chaves</span><b>${brl(incc)}</b></li>` : `<li><span>Entrada</span><b>${brl(S.entrada)}</b></li>`)
     + `<li><span>ITBI (${pct(+S.itbi || 0)})</span><b>${brl(R.cc.itbi)}</b></li>`
     + `<li><span>Registro, avaliação e outras</span><b>${brl(R.cc.outros)}</b></li>`
     + `<li class="tot"><span>Total necessário na compra</span><b>${brl(tot)}</b></li>`
@@ -1619,6 +1701,7 @@ function renderLTV(){
   if (max > 0 && R.ltv > max + 1e-9){
     const minEnt = S.valor * (1 - max / 100);
     al.hidden = false; al.className = 'alert warn';
+    if (fluxoOn()){ al.innerHTML = `Com um limite de financiamento de ${pct(max, max % 1 ? 2 : 0)}, os pagamentos à construtora precisariam somar pelo menos <b>${brl(minEnt)}</b>. Ajuste-os em Imóvel na planta.`; return; }
     al.innerHTML = `Com um limite de financiamento de ${pct(max, max % 1 ? 2 : 0)}, a entrada mínima seria <b>${brl(minEnt)}</b>.<br><button class="btn sm" type="button" id="btnFixLtv">Usar entrada de ${brlShort(minEnt)}</button>`;
     $('#btnFixLtv').onclick = () => { S.entrada = Math.round(minEnt * 100) / 100; syncInputs(); update(); };
   } else al.hidden = true;
@@ -1639,7 +1722,8 @@ function renderVS(){
   const th = curTheme();
   const col2 = (t, r, c, a, z) => `<div style="--c:${c}"><h3>${t}</h3><dl><div><dt>${a}</dt><dd>${brl(r.p1)}</dd></div><div><dt>${z}</dt><dd>${brl(r.last)}</dd></div><div><dt>Total de juros</dt><dd>${brl(r.juros)}</dd></div><div><dt>Total pago</dt><dd>${brl(r.totalPago)}</dd></div>${r.n !== r.nContratado ? `<div><dt>Parcelas pagas</dt><dd>${r.n}</dd></div>` : ''}</dl></div>`;
   $('#vsBody').innerHTML = '<div class="vs">' + col2('SAC', s, th.s.sac, 'Primeira parcela', 'Última parcela') + col2('PRICE', p, th.s.price, 'Parcela inicial', 'Parcela final aprox.') + '</div>'
-    + `<div class="vs-cet"><span class="fact">CET SAC <b>${pct(R.cetSac)} a.a.</b></span><span class="fact">CET PRICE <b>${pct(R.cetPrice)} a.a.</b></span>${Qb('cet')}</div>`;
+    + `<div class="vs-cet"><span class="fact">CET SAC <b>${pct(R.cetSac)} a.a.</b></span><span class="fact">CET PRICE <b>${pct(R.cetPrice)} a.a.</b></span>${Qb('cet')}</div>`
+    + (R.priceFixa ? `<p class="note">Com a correção pela ${idxNome()} (${pct(idxAA())} a.a.), a parcela da PRICE não fica fixa: o saldo é corrigido todo mês e a prestação acompanha. Sem correção, ela ficaria em torno de ${brl(R.priceFixa.p1)} do início ao fim.</p>` : '');
   $('#vsDiff').innerHTML = `<li><span>Diferença total de juros (PRICE − SAC)</span><b>${brl(p.juros - s.juros)}</b></li>`
     + `<li><span>Diferença na 1ª parcela (SAC − PRICE)</span><b>${brl(s.p1 - p.p1)}</b></li>`
     + `<li><span>Diferença no total pago (PRICE − SAC)</span><b>${brl(p.totalPago - s.totalPago)}</b></li>`;
@@ -1850,6 +1934,22 @@ function buildReport(){
   const c = cumul(r), eq = equity(r), half = eq.findIndex(v => v >= 50);
   const prazos = prazoList(), ent = entradaOpts(), tax = taxaOpts();
   const ann = annual(r);
+  const obraSec = () => {
+    const o = R.obra; if (!o.on || !(o.fluxo || o.modo === 'obra')) return '';
+    const sp = specObra(), p = S.planta, rows = [];
+    if (o.fluxo){
+      if (o.sinal > 0) rows.push(['Sinal, no ato', brl(o.sinal)]);
+      if (p.mensal > 0) rows.push([`Mensais (${o.n} × ${brl(p.mensal)})`, brl(p.mensal * o.n)]);
+      if (o.nBal > 0) rows.push([`Intermediárias (${o.nBal} × ${brl(p.balao)}, a cada ${balaoCada(p)} meses)`, brl(p.balao * o.nBal)]);
+      if (p.chavesPag > 0) rows.push(['Na entrega das chaves', brl(p.chavesPag)]);
+      rows.push(['Total do contrato (entrada)', brl(o.nominal)], ['Correção pelo INCC (' + pct(p.incc, 1) + ' a.a.)', brl(o.inccPag)], ['Total pago à construtora', brl(o.pago)]);
+    }
+    if (o.modo === 'obra') rows.push(['Juros de obra ao banco', brl(o.juros)]);
+    else rows.push(['Saldo financiado nas chaves', brl(o.pvEff) + ' (hoje ' + brl(R.pv) + ')']);
+    return `<section><h2>Fase de obra: ${o.n} meses até as chaves</h2><p class="cap">${o.fluxo ? 'Pagamentos de cada mês até a entrega, corrigidos pelo INCC' + (o.modo === 'obra' ? ', e juros de obra pagos ao banco' : '') + (o.sinal > 0 ? '. O sinal não aparece no gráfico' : '') : 'Juros de obra pagos ao banco em cada mês'}.</p>`
+      + (sp.empty ? '' : `<div class="fig">${img(sp, 220)}</div>${legend(sp.stacks.map(s => [s.label, col(L, s.color)]))}`)
+      + `<div style="margin-top:10px">${kv(rows)}</div></section>`;
+  };
 
   let h = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Relatório de financiamento — ${brl(S.valor)}</title>
@@ -1920,8 +2020,9 @@ table.kv td:last-child{font-weight:700}
 
 <section><h2>Dados da simulação</h2><div class="cols">
 ${kv([['Valor do imóvel', brl(S.valor)], ['Entrada', brl(S.entrada) + ' (' + pct(R.entradaPct) + ')'], ['Valor financiado', brl(R.pv)], ['Percentual financiado (LTV)', pct(R.ltv) + (S.ltvMax ? ' (limite ' + pct(S.ltvMax, 0) + ')' : '')], ['Banco', esc(bancoNome())], ['Taxa de juros', pct(S.taxaAA) + ' a.a. ≈ ' + pct(iM, 4) + ' a.m.' + (taxaOficial() ? ' (média praticada em ' + esc(TAXAS.mercado.periodo) + ', Banco Central)' : '')]])}
-${kv([['Prazo', fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)'], ['Sistema', sistemaLabel()], ['1ª parcela em', labelMes(1) || '—'], ['Correção do saldo', idxOn() ? idxNome() + ' de ' + pct(idxAA()) + ' a.a. (estimada)' : 'Não considerada'], ['Seguros', segDesc], ['Tarifa', brl(+S.tarifa || 0) + '/mês'], ['Amortizações extras', esc(extrasDesc())], ['FGTS', fgtsAtivo() ? [R.fgtsEntrada > 0 ? brl(R.fgtsEntrada) + ' na entrada' : '', R.fgtsAmort > 0 ? brl(R.fgtsAmort) + ' em amortizações a cada 2 anos' : ''].filter(Boolean).join('; ') || 'Ativo' : 'Não usado'], ['Imóvel na planta', R.obra.on ? R.obra.n + ' meses até as chaves, ' + (R.obra.modo === 'obra' ? 'juros de obra de ' + brl(R.obra.juros) : 'INCC de ' + pct(S.planta.incc, 1) + ' a.a. (+' + brl(R.obra.inccAdd) + ')') : 'Não']])}
+${kv([['Prazo', fmtPrazo(S.prazo) + ' (' + S.prazo + ' meses)'], ['Sistema', sistemaLabel()], ['1ª parcela em', labelMes(1) || '—'], ['Correção do saldo', idxOn() ? idxNome() + ' de ' + pct(idxAA()) + ' a.a. (estimada)' : 'Não considerada'], ['Seguros', segDesc], ['Tarifa', brl(+S.tarifa || 0) + '/mês'], ['Amortizações extras', esc(extrasDesc())], ['FGTS', fgtsAtivo() ? [R.fgtsEntrada > 0 ? brl(R.fgtsEntrada) + ' na entrada' : '', R.fgtsAmort > 0 ? brl(R.fgtsAmort) + ' em amortizações a cada 2 anos' : ''].filter(Boolean).join('; ') || 'Ativo' : 'Não usado'], ['Imóvel na planta', R.obra.on ? R.obra.n + ' meses até as chaves, ' + (R.obra.modo === 'obra' ? 'juros de obra de ' + brl(R.obra.juros) : 'INCC de ' + pct(S.planta.incc, 1) + ' a.a. (+' + brl(R.obra.inccAdd) + ')') + (R.obra.fluxo ? '; ' + brl(R.obra.pago) + ' pagos à construtora' : '') : 'Não']])}
 </div></section>
+${obraSec()}
 
 <section><h2>Evolução da parcela</h2><p class="cap">Valor total de cada parcela ao longo do contrato, incluindo seguros e tarifa.</p><div class="fig">${img(hero, 260)}</div>${legend(hero.series.length > 1 ? hero.series.map(s => [s.label, col(L, s.color), s.dash]) : [])}</section>
 
@@ -2194,15 +2295,16 @@ async function shareLink(){
 
 /* ---------- glossário ---------- */
 const GLOSS = {
-  sac:['SAC e PRICE', 'No SAC a amortização é igual todo mês, então a parcela começa maior e cai com o tempo. Na PRICE a parcela é fixa: no começo ela paga mais juros e, no fim, mais amortização.'],
+  sac:['SAC e PRICE', 'No SAC a amortização é igual todo mês, então a parcela começa maior e cai com o tempo. Na PRICE a prestação é igual todo mês: no começo ela paga mais juros e, no fim, mais amortização. Se o saldo for corrigido pela TR ou pelo IPCA, a prestação da PRICE sobe junto com o índice.'],
   amort:['Amortização', 'A parte da parcela que reduz a dívida. O resto da parcela é juros, seguros e tarifa.'],
   ltv:['Percentual financiado (LTV)', 'Quanto do valor do imóvel o banco financia. Cada banco define um limite máximo; o resto precisa vir da entrada.'],
   cet:['CET (custo efetivo total)', 'A taxa que reúne juros, correção, seguros, tarifa e avaliação. É o número certo para comparar propostas de bancos diferentes: quanto menor, mais barato.'],
-  tr:['TR e IPCA', 'Índices que corrigem o saldo devedor todo mês. A TR costuma ser baixa. O IPCA acompanha a inflação: contratos com IPCA têm juros menores, mas o saldo cresce com a inflação.'],
+  tr:['TR e IPCA', 'Índices que corrigem o saldo devedor todo mês, e com ele a parcela (inclusive na PRICE). Quase todo financiamento bancário é "taxa + TR". A TR ficou em zero de 2018 a 2020, mas voltou a subir com os juros altos e está perto de 2% ao ano. O IPCA acompanha a inflação: contratos com IPCA têm juros menores, mas o saldo cresce com a inflação.'],
   mip:['Seguros MIP e DFI', 'Seguros obrigatórios. O MIP cobre morte e invalidez, é cobrado sobre o saldo devedor e depende da idade. O DFI cobre danos ao imóvel e é cobrado sobre o valor do imóvel.'],
   fgts:['FGTS', 'O saldo do FGTS pode pagar parte da entrada e amortizar o saldo devedor a cada 2 anos, se o imóvel e você atenderem às regras do fundo.'],
   obra:['Nas chaves ou durante a obra', 'Nas chaves: você contrata o banco na entrega, e o saldo a pagar é corrigido pelo INCC até lá. Durante a obra: o banco libera o dinheiro aos poucos e você paga juros de obra sobre o valor já liberado.'],
   incc:['INCC', 'Índice Nacional de Custo da Construção. Corrige o saldo devido enquanto o imóvel está em obra.'],
+  fluxo:['Pagamentos à construtora', 'Na compra na planta, parte do preço é paga direto à construtora até a entrega: sinal, mensais, intermediárias (balões) e, às vezes, uma parcela nas chaves. Esses valores são corrigidos pelo INCC até o mês do pagamento. O que falta é o saldo que o banco financia nas chaves.'],
   rend:['Rendimento líquido', 'Quanto o investimento rende por ano depois do imposto de renda e das taxas, como um CDB ou o Tesouro Direto já descontado o IR.'],
   itbi:['ITBI', 'Imposto municipal pago na transferência do imóvel. A alíquota depende da cidade.'],
   taxabc:['Taxas dos bancos', 'Média que cada banco cobrou, no mês, nos financiamentos imobiliários com juros de mercado e correção pela TR, segundo o Banco Central. É atualizada toda semana. A sua taxa pode ser diferente: depende do seu perfil, do relacionamento com o banco e do imóvel. Programas como o Minha Casa Minha Vida têm juros menores e não entram nessa média.']
@@ -2304,9 +2406,20 @@ function renderControls(){
   const fx = fgtsExtras(S.prazo, S), usos = [];
   for (let k = 1; k <= S.prazo && usos.length < 2; k++) if (fx[k] > 0) usos.push(`${brl(fx[k])} na parcela ${k}${labelMes(k) ? ' (' + labelMes(k) + ')' : ''}`);
   $('#fgtsHint').textContent = !fgtsAtivo() ? '' : [R.fgtsEntrada > 0 ? `${brl(R.fgtsEntrada)} vão para a entrada.` : '', S.fgts.amortizar && usos.length ? `Amortizações: ${usos.join(', depois ')} e assim por diante, a cada 2 anos.` : ''].filter(Boolean).join(' ');
-  $('#plantaBox').hidden = !S.planta.on; $('#inccField').hidden = S.planta.modo !== 'chaves';
+  $('#plantaBox').hidden = !S.planta.on; $('#inccField').hidden = S.planta.modo !== 'chaves' && !S.planta.fluxo;
+  $('#fluxoBox').hidden = !S.planta.fluxo;
+  const fl = fluxoOn();
+  ['entrada', 'entradaPct', 'entradaRange'].forEach(id => { $('#' + id).disabled = fl; });
+  $('#entradaHint').hidden = !fl;
+  if (fl){
+    $('#entradaHint').textContent = 'Soma dos pagamentos à construtora (em Imóvel na planta).';
+    setVal('entrada', moneyIn(S.entrada)); setVal('entradaPct', smart(S.valor > 0 ? S.entrada / S.valor * 100 : 0, 2));
+    $('#entradaRange').value = S.valor > 0 ? Math.min(100, S.entrada / S.valor * 100) : 0;
+    const o = R.obra;
+    $('#fluxoHint').textContent = `Somam ${brl(o.nominal)} (${pct(R.entradaPct, 1)} do imóvel). Com o INCC, você paga ${brl(o.pago)} até as chaves.`;
+  } else $('#fluxoHint').textContent = '';
   $('#plantaModoHint').textContent = S.planta.modo === 'chaves' ? 'O saldo é corrigido pelo INCC até a entrega; o financiamento começa nas chaves.' : 'Você paga juros sobre o valor que o banco já liberou à construtora até a entrega.';
-  $('#inicioHint').textContent = S.planta.on ? 'Com imóvel na planta, informe o mês da 1ª parcela depois das chaves.' : '';
+  $('#inicioHint').textContent = S.planta.on ? 'Na planta, a 1ª parcela do banco vem depois das chaves. A data já conta os meses de obra a partir de agora; ajuste se precisar.' : '';
   $('#modoHint').textContent = S.extraModo === 'prazo'
     ? (sistemaPrim() === 'SAC' ? 'Mantém a amortização mensal e encurta o contrato.' : 'Mantém a prestação e encurta o contrato.')
     : 'Mantém o prazo e recalcula parcelas menores.';
@@ -2329,7 +2442,8 @@ const FIELDS = {
   itbi:'pct', registro:'money', avaliacao:'money', outras:'money'
 };
 function fmtFor(type, v){ return type === 'money' ? moneyIn(v) : type === 'int' ? String(Math.round(+v || 0)) : smart(+v || 0, type === 'pct4' ? 4 : 2); }
-const NESTED = { fgtsSaldo:['fgts','saldo','money'], fgtsMensal:['fgts','mensal','money'], plantaMeses:['planta','meses','int'], plantaIncc:['planta','incc','pct'] };
+const NESTED = { fgtsSaldo:['fgts','saldo','money'], fgtsMensal:['fgts','mensal','money'], plantaMeses:['planta','meses','int'], plantaIncc:['planta','incc','pct'],
+  plantaSinal:['planta','sinal','money'], plantaMensal:['planta','mensal','money'], plantaBalao:['planta','balao','money'], plantaBalaoCada:['planta','balaoCada','int'], plantaChavesPag:['planta','chavesPag','money'] };
 function setVal(id, v){ const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = v; }
 function syncInputs(){
   Object.keys(FIELDS).forEach(k => setVal(k, fmtFor(FIELDS[k], S[k])));
@@ -2343,7 +2457,7 @@ function syncInputs(){
   $('#extrasOn').checked = !!S.extrasOn;
   setVal('idxAA', smart(S.indice === 'ipca' ? S.ipcaAA : S.trAA, 2));
   Object.keys(NESTED).forEach(id => { const [o, k, t] = NESTED[id]; setVal(id, fmtFor(t, S[o][k])); });
-  $('#fgtsOn').checked = S.fgts.on; $('#fgtsEntrada').checked = S.fgts.entrada; $('#fgtsAmort').checked = S.fgts.amortizar; $('#plantaOn').checked = S.planta.on;
+  $('#fgtsOn').checked = S.fgts.on; $('#fgtsEntrada').checked = S.fgts.entrada; $('#fgtsAmort').checked = S.fgts.amortizar; $('#plantaOn').checked = S.planta.on; $('#plantaFluxo').checked = S.planta.fluxo;
   $$('[data-p]').forEach(el => { if (document.activeElement !== el) el.value = fmtFor(el.dataset.t, S.plan[el.dataset.p]); });
   $('#comp').value = S.comp;
   setVal('recValor', moneyIn(S.rec.valor)); setVal('recCada', S.rec.cada); setVal('recInicio', S.rec.inicio); setVal('recQtd', S.rec.qtd);
@@ -2458,7 +2572,28 @@ Object.keys(NESTED).forEach(id => {
   $('#' + id).addEventListener('blur', e => { e.target.value = fmtFor(t, S[o][k]); });
 });
 [['fgtsOn','fgts','on'], ['fgtsEntrada','fgts','entrada'], ['fgtsAmort','fgts','amortizar'], ['plantaOn','planta','on']].forEach(([id, o, k]) =>
-  $('#' + id).addEventListener('change', e => { S[o][k] = e.target.checked; update(); }));
+  $('#' + id).addEventListener('change', e => { S[o][k] = e.target.checked; if (id === 'plantaOn') inicioChaves(); update(); }));
+/* Na planta, a 1ª parcela do banco vem depois das chaves: se o usuário não escolheu outra data,
+   a data acompanha os meses de obra (obra começando agora). */
+let inicioAuto = S.inicio === nextMonthStr() || S.inicio === nextMonthStr(Math.round(+S.planta.meses || 0));
+function inicioChaves(){
+  if (!inicioAuto) return;
+  S.inicio = nextMonthStr(S.planta.on ? Math.max(0, Math.round(+S.planta.meses || 0)) : 0);
+  setVal('inicio', S.inicio);
+}
+$('#plantaMeses').addEventListener('input', inicioChaves);
+$('#inicio').addEventListener('change', () => { inicioAuto = false; });
+/* Ao ligar os pagamentos à construtora sem valores, distribui a entrada atual (sinal, mensais, intermediárias e chaves)
+   para o resultado não mudar de repente; depois o usuário ajusta pelos valores da tabela da construtora. */
+$('#plantaFluxo').addEventListener('change', e => {
+  const p = S.planta; p.fluxo = e.target.checked;
+  if (p.fluxo && !(p.sinal > 0 || p.mensal > 0 || p.balao > 0 || p.chavesPag > 0) && S.entrada > 0){
+    const N = Math.max(1, Math.round(+p.meses || 0)), nb = Math.floor(N / balaoCada(p)), q = S.entrada / 4, r100 = v => Math.floor(v / 100) * 100;
+    p.sinal = r100(q); p.mensal = r100(q / N); p.balao = nb ? r100(q / nb) : 0;
+    p.chavesPag = Math.max(0, Math.round((S.entrada - p.sinal - p.mensal * N - p.balao * nb) * 100) / 100);
+  }
+  syncInputs(); update();
+});
 $('#tab-planejar').addEventListener('input', e => {
   const el = e.target.closest('[data-p]'); if (!el) return;
   const v = el.dataset.t === 'int' ? parseInt(el.value.replace(/\D/g, ''), 10) : parseBR(el.value);
@@ -2563,7 +2698,7 @@ if (window.ResizeObserver){
 mount('cvHero', specHero); mount('cvEvo', specEvo); mount('cvAnual', specAnual); mount('cvPat', specPat);
 mount('cvAcum', specAcum); mount('cvDonut', specDonut); mount('cvVS', specVS);
 mount('cvPrazoP', () => specPrazo('p1')); mount('cvPrazoJ', () => specPrazo('juros'));
-mount('cvInvest', specInvest); mount('cvAluga', specAluga); mount('cvHoje', specHoje);
+mount('cvInvest', specInvest); mount('cvAluga', specAluga); mount('cvHoje', specHoje); mount('cvObra', specObra);
 const fromLink = readLink();
 if (fromLink === true) TAB = 'resumo';
 buildNav(); syncInputs(); applyTab(); run(); loadTaxas();

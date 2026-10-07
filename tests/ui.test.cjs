@@ -36,7 +36,7 @@ const AUDIT = () => {
   return out;
 };
 const COMPLETO = { sistema:'COMP', indice:'ipca', segModo:'pct', mipPct:0.02, dfiPct:0.007, tarifa:25, renda:45000, avaliacao:3500, registro:12000,
-  fgts:{ on:true, saldo:100000, mensal:1500, entrada:false, amortizar:true }, planta:{ on:true, meses:24, modo:'obra', incc:5 },
+  fgts:{ on:true, saldo:100000, mensal:1500, entrada:false, amortizar:true }, planta:{ on:true, meses:24, modo:'obra', incc:5, fluxo:true, sinal:50000, mensal:3000, balao:25000, balaoCada:6, chavesPag:80000 },
   pontuais:[{ mes:12, valor:100000 }], rec:{ valor:2000, cada:1, inicio:1, qtd:0 } };
 async function auditarLayout(abrir){
   const VPS = [[320,640,1],[375,812,1],[768,1024,1],[1024,768,0],[1440,900,0]], problemas = [];
@@ -102,6 +102,7 @@ async function auditarLayout(abrir){
   const passos = [];
   for (const ch of '1600000'){ await pg.locator('#valor').pressSequentially(ch); passos.push(await pg.inputValue('#valor')); }
   check('máscara: pontos aparecem enquanto digita', passos.join(' ') === '1 16 160 1.600 16.000 160.000 1.600.000', passos.join(' '));
+  await pg.waitForTimeout(150);
   check('máscara: o valor digitado já vale no cálculo', (await txt(pg, '#liveVal')) === 'R$ 13.805,76', await txt(pg, '#liveVal'));
   for (let i = 0; i < 3; i++) await pg.keyboard.press('Backspace');
   const aposApagar = await pg.inputValue('#valor');
@@ -141,7 +142,32 @@ async function auditarLayout(abrir){
   await pg.click('#bnav [data-tab=resumo]'); await pg.waitForTimeout(150);
   check('juros de obra calculados', (await txt(pg, '#obraBody')).includes('juros de obra'));
   await largura(pg, 'resumo com obra');
-  await pg.click('#bnav [data-tab=dados]'); await pg.uncheck('#plantaOn'); await pg.waitForTimeout(100);
+  // Pagamentos à construtora (comprar na planta e financiar nas chaves)
+  await pg.click('#bnav [data-tab=dados]'); await pg.click('#plantaModoSeg [data-v=chaves]'); await pg.waitForTimeout(150);
+  const antes = await txt(pg, '#liveVal');
+  await pg.check('#plantaFluxo'); await pg.waitForTimeout(150);
+  check('construtora: ao ligar, distribui a entrada atual sem mudar o resultado', (await pg.inputValue('#entrada')) === '400.000' && await pg.isDisabled('#entrada') && (await txt(pg, '#liveVal')) === antes,
+    await pg.inputValue('#entrada') + ' ' + antes + ' → ' + await txt(pg, '#liveVal'));
+  for (const [id, v] of [['plantaSinal', '50000'], ['plantaMensal', '5000'], ['plantaBalao', '30000'], ['plantaBalaoCada', '6'], ['plantaChavesPag', '100000']]){ await pg.fill('#' + id, v); }
+  await pg.waitForTimeout(200);
+  const fM = Math.pow(1.05, 1 / 12); let pago = 50000;
+  for (let j = 1; j <= 24; j++) pago += (5000 + (j % 6 === 0 ? 30000 : 0) + (j === 24 ? 100000 : 0)) * Math.pow(fM, j);
+  const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const finChaves = fmt(1210000 * Math.pow(1.05, 2));
+  check('construtora: entrada = soma do contrato (50 mil + 24 × 5 mil + 4 × 30 mil + 100 mil)', (await pg.inputValue('#entrada')) === '390.000', await pg.inputValue('#entrada'));
+  await pg.click('#bnav [data-tab=resumo]'); await pg.waitForTimeout(200);
+  const ob = await txt(pg, '#obraRes');
+  check('construtora: total pago com INCC e saldo financiado nas chaves', ob.includes(fmt(pago)) && ob.includes(finChaves) && await pg.isVisible('#cvObra'), fmt(pago) + ' / ' + finChaves);
+  check('construtora: frase do resumo cita o pagamento à construtora', (await txt(pg, '#heroSub')).includes('à construtora'));
+  await largura(pg, 'resumo com pagamentos à construtora');
+  await pg.click('#bnav [data-tab=dados]'); await pg.uncheck('#plantaFluxo'); await pg.uncheck('#plantaOn'); await pg.waitForTimeout(100);
+  check('construtora: ao desligar, a entrada volta a ser editável', !(await pg.isDisabled('#entrada')));
+  await pg.fill('#entrada', '400000'); await pg.waitForTimeout(150);
+  // PRICE com TR: a parcela sobe e o resumo explica
+  await pg.click('#sistemaSeg [data-v=PRICE]'); await pg.click('#indiceSeg [data-v=tr]'); await pg.waitForTimeout(200);
+  await pg.click('#bnav [data-tab=resumo]'); await pg.waitForTimeout(150);
+  check('PRICE com TR explica que a parcela sobe e mostra a parcela sem correção', /Sobe com a correção do saldo pela TR.*sem correção, ficaria em torno de R\$ 10\.952,14/.test(await txt(pg, '#heroSub')), await txt(pg, '#heroSub'));
+  await pg.click('#bnav [data-tab=dados]'); await pg.click('#sistemaSeg [data-v=SAC]'); await pg.click('#indiceSeg [data-v=nenhum]'); await pg.waitForTimeout(150);
   // Planejar
   await pg.click('#bnav [data-tab=planejar]'); await pg.waitForTimeout(250);
   const meta = await txt(pg, '#metaBody');

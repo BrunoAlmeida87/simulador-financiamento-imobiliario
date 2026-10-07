@@ -1,6 +1,6 @@
 /* Service worker do simulador: permite instalar como app e usar offline.
    Página e taxas.json: rede primeiro (pega atualizações), cache como reserva. Demais arquivos: cache primeiro. */
-const CACHE = 'simulador-v5';
+const CACHE = 'simulador-v6';
 const ARQUIVOS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable.png'];
 
 self.addEventListener('install', e => {
