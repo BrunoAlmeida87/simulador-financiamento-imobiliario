@@ -2,29 +2,29 @@
   "fonte": "Banco Central do Brasil — taxas médias de juros por instituição financeira",
   "url": "https://www.bcb.gov.br/estatisticas/reporttxjuros",
   "nota": "Taxa média praticada pelo banco no mês, sem a TR (pós-fixado referenciado em TR), pessoa física. As taxas reguladas incluem programas subsidiados (MCMV/FGTS).",
-  "gerado": "2026-11-09",
+  "gerado": "2026-11-16",
   "mercado": {
     "modalidade": "Financiamento imobiliário com taxas de mercado - Pós-fixado referenciado em TR",
     "serie": "mensal",
-    "periodo": "set/2026",
+    "periodo": "out/2026",
     "bancos": {
-      "caixa": 12.05,
-      "bb": 14.49,
-      "itau": 12.14,
-      "bradesco": 12.24,
-      "santander": 12.31
+      "caixa": 11.97,
+      "bb": 14.42,
+      "itau": 12.22,
+      "bradesco": 12.27,
+      "santander": 12.32
     }
   },
   "reguladas": {
     "modalidade": "Financiamento imobiliário com taxas reguladas - Pós-fixado referenciado em TR",
     "serie": "mensal",
-    "periodo": "set/2026",
+    "periodo": "out/2026",
     "bancos": {
-      "caixa": 7.98,
-      "bb": 10.61,
-      "itau": 11.87,
-      "bradesco": 11.77,
-      "santander": 11.85
+      "caixa": 7.87,
+      "bb": 10.56,
+      "itau": 11.86,
+      "bradesco": 11.78,
+      "santander": 11.86
     }
   }
 }
